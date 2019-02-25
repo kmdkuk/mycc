@@ -63,3 +63,7 @@ Mkfile.old
 dkms.conf
 
 
+*~
+*.o
+tmp*
+mycc
