@@ -21,6 +21,102 @@ typedef struct
 // トークナイズした結果のトークン列はこの配列に保存する．
 // 100個以上のトークンは来ないものとする
 Token tokens[100];
+int pos = 0;
+
+// エラーを報告するための関数
+void error(char *s, char *p)
+{
+  fprintf(stderr, s, p);
+  exit(1);
+}
+
+enum
+{
+  ND_NUM = 256, // 整数ノードの型
+};
+
+typedef struct Node
+{
+  int ty;           // 演算子がND_NUM
+  struct Node *lhs; // 左辺
+  struct Node *rhs; // 右辺
+  int val;          // tyがND_NUMの場合のみ使う
+} Node;
+
+Node *new_node(int ty, Node *lhs, Node *rhs)
+{
+  Node *node = malloc(sizeof(Node));
+  node->ty = ty;
+  node->lhs = lhs;
+  node->rhs = rhs;
+  return node;
+}
+
+Node *new_node_num(int val)
+{
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_NUM;
+  node->val = val;
+  return node;
+}
+
+int consume(int ty)
+{
+  if (tokens[pos].ty != ty)
+    return 0;
+  pos++;
+  return 1;
+}
+
+Node *add();
+Node *mul();
+Node *term();
+
+Node *term()
+{
+  if (consume('('))
+  {
+    Node *node = add();
+    if (!consume(')'))
+      error("開きカッコに対応する閉じカッコがありません： %s\n", tokens[pos].input);
+    return node;
+  }
+
+  if (tokens[pos].ty == TK_NUM)
+    return new_node_num(tokens[pos++].val);
+
+  error("数値でも開きカッコでもないトークンです： %s\n", tokens[pos].input);
+}
+
+Node *mul()
+{
+  Node *node = term();
+
+  for (;;)
+  {
+    if (consume('*'))
+      node = new_node('*', node, term());
+    else if (consume('/'))
+      node = new_node('/', node, term());
+    else
+      return node;
+  }
+}
+
+Node *add()
+{
+  Node *node = mul();
+
+  for (;;)
+  {
+    if (consume('+'))
+      node = new_node('+', node, mul());
+    else if (consume('-'))
+      node = new_node('-', node, mul());
+    else
+      return node;
+  }
+}
 
 // pが指している文字列をトークンに分割してtokensに保存する
 void tokenize(char *p)
@@ -53,19 +149,11 @@ void tokenize(char *p)
       continue;
     }
 
-    fprintf(stderr, "トークナイズできません： %s\n", p);
-    exit(1);
+    error("トークナイズできません： %s\n", p);
   }
 
   tokens[i].ty = TK_EOF;
   tokens[i].input = p;
-}
-
-// エラーを報告するための関数
-void error(int i)
-{
-  fprintf(stderr, "予期しないトークンです： %s\n", tokens[i].input);
-  exit(1);
 }
 
 int main(int argc, char **argv)
@@ -87,7 +175,7 @@ int main(int argc, char **argv)
   // 式の最初は数かどうか
   // 最初のmov命令を出力
   if (tokens[0].ty != TK_NUM)
-    error(0);
+    error("予期しないトークンです： %s\n", tokens[0].input);
   printf("  mov rax, %d\n", tokens[0].val);
 
   // '+ <数>'または'- <数>'というトークンの並びを消費しつつ
@@ -99,7 +187,7 @@ int main(int argc, char **argv)
     {
       i++;
       if (tokens[i].ty != TK_NUM)
-        error(i);
+        error("予期しないトークンです： %s\n", tokens[i].input);
       printf("  add rax, %d\n", tokens[i].val);
       i++;
       continue;
@@ -109,13 +197,13 @@ int main(int argc, char **argv)
     {
       i++;
       if (tokens[i].ty != TK_NUM)
-        error(i);
+        error("予期しないトークンです： %s\n", tokens[i].input);
       printf("  sub rax, %d\n", tokens[i].val);
       i++;
       continue;
     }
 
-    error(i);
+    error("予期しないトークンです： %s\n", tokens[i].input);
   }
   printf("  ret\n");
   return 0;
