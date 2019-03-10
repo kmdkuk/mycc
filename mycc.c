@@ -131,7 +131,7 @@ void tokenize(char *p)
       continue;
     }
 
-    if (*p == '+' || *p == '-')
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
     {
       tokens[i].ty = *p;
       tokens[i].input = p;
@@ -197,47 +197,21 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  // トークナイズ
+  // トークナイズしてパースする．
   tokenize(argv[1]);
+  Node *node = add();
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  // 式の最初は数かどうか
-  // 最初のmov命令を出力
-  if (tokens[0].ty != TK_NUM)
-    error("予期しないトークンです： %s\n", tokens[0].input);
-  printf("  mov rax, %d\n", tokens[0].val);
+  // 抽象構文木を下りながらコード生成
+  gen(node);
 
-  // '+ <数>'または'- <数>'というトークンの並びを消費しつつ
-  // アセンブリを出力
-  int i = 1;
-  while (tokens[i].ty != TK_EOF)
-  {
-    if (tokens[i].ty == '+')
-    {
-      i++;
-      if (tokens[i].ty != TK_NUM)
-        error("予期しないトークンです： %s\n", tokens[i].input);
-      printf("  add rax, %d\n", tokens[i].val);
-      i++;
-      continue;
-    }
-
-    if (tokens[i].ty == '-')
-    {
-      i++;
-      if (tokens[i].ty != TK_NUM)
-        error("予期しないトークンです： %s\n", tokens[i].input);
-      printf("  sub rax, %d\n", tokens[i].val);
-      i++;
-      continue;
-    }
-
-    error("予期しないトークンです： %s\n", tokens[i].input);
-  }
+  // スタックトップに式全体の値が残っているはずなので
+  // それをRAXにロードして関数からの返り値とする．
+  printf("  pop rax\n");
   printf("  ret\n");
   return 0;
 }
