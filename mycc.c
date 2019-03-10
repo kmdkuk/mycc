@@ -34,21 +34,27 @@ void runtest()
   printf("OK\n");
 }
 
-// トークナイズした結果のトークン列はこの配列に保存する．
-// 100個以上のトークンは来ないものとする
+// トークナイズした結果のトークン列はこのVectorに保存する．
 Vector *tokens;
 int pos = 0;
 
+// 複数の式を保存するための配列
+Node *code[100];
+
 // エラーを報告するための関数
-void error(char *s, char *p)
+void error(char *fmt, ...)
 {
-  fprintf(stderr, s, p);
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
   exit(1);
 }
 
 enum
 {
   ND_NUM = 256, // 整数ノードの型
+  ND_IDENT,     // 識別子のノードの型
 };
 
 Node *new_node(int ty, Node *lhs, Node *rhs)
@@ -68,9 +74,17 @@ Node *new_node_num(int val)
   return node;
 }
 
+Node *new_node_name(char *name)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node->ty = ND_IDENT;
+  node->name = name[0];
+  return node;
+}
+
 int consume(int ty)
 {
-  if (tokens->data[pos].ty != ty) // ここでセグフォ
+  if (tokens->data[pos].ty != ty)
   {
     return 0;
   }
@@ -91,7 +105,10 @@ Node *term()
   if (tokens->data[pos].ty == TK_NUM)
     return new_node_num(tokens->data[pos++].val);
 
-  error("数値でも開きカッコでもないトークンです： %s\n", tokens->data[pos].input);
+  if (tokens->data[pos].ty == TK_IDENT)
+    return new_node_name(tokens->data[pos++].input);
+
+  error("a-zの変数，数値，開きカッコでもないトークンです： %s\n", tokens->data[pos].input);
 }
 
 Node *mul()
@@ -119,6 +136,34 @@ Node *add()
       node = new_node('+', node, mul());
     else if (consume('-'))
       node = new_node('-', node, mul());
+    else
+      return node;
+  }
+}
+
+void program()
+{
+  int i = 0;
+  while (tokens->data[pos].ty != TK_EOF)
+    code[i++] = stmt();
+  code[i] = NULL;
+}
+
+Node *stmt()
+{
+  Node *node = assign();
+  if (!consume(';'))
+    error("';'ではないトークンです: %s", tokens->data[pos].input);
+  return node;
+}
+
+Node *assign()
+{
+  Node *node = add();
+  for (;;)
+  {
+    if (consume('='))
+      node = new_node('=', node, assign());
     else
       return node;
   }
@@ -162,7 +207,7 @@ void *tokenize(char *p)
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '=' || *p == ';')
     {
       Token *token = new_token();
       token->ty = *p;
@@ -182,6 +227,16 @@ void *tokenize(char *p)
       continue;
     }
 
+    if ('a' <= *p && *p <= 'z')
+    {
+      Token *token = new_token();
+      token->ty = TK_IDENT;
+      token->input = p;
+      vec_push(tokens, *token);
+      p++;
+      continue;
+    }
+
     error("トークナイズできません： %s\n", p);
   }
 
@@ -191,11 +246,43 @@ void *tokenize(char *p)
   vec_push(tokens, *token);
 }
 
+void gen_lval(Node *node)
+{
+  if (node->ty != ND_IDENT)
+    error("代入の左辺値が変数ではありません．");
+
+  int offset = ('z' - node->name + 1) * 8;
+  printf("  mov rax, rbp\n");
+  printf("  sub rax, %d\n", offset);
+  printf("  push rax\n");
+}
+
 void gen(Node *node)
 {
   if (node->ty == ND_NUM)
   {
     printf("  push %d\n", node->val);
+    return;
+  }
+
+  if (node->ty == ND_IDENT)
+  {
+    gen_lval(node);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == '=')
+  {
+    gen_lval(node->lhs);
+    gen(node->rhs);
+
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    printf("  mov [rax], rdi\n");
+    printf("  push rdi\n");
     return;
   }
 
@@ -240,19 +327,33 @@ int main(int argc, char **argv)
 
   // トークナイズしてパースする．
   tokenize(argv[1]);
-  Node *node = add();
+  program();
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  // 抽象構文木を下りながらコード生成
-  gen(node);
+  // プロローグ
+  // 変数26個分の領域を確保する
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, %d\n", 8 * 26);
 
-  // スタックトップに式全体の値が残っているはずなので
-  // それをRAXにロードして関数からの返り値とする．
-  printf("  pop rax\n");
+  // 先頭の式から順にコード生成
+  for (int i = 0; code[i]; i++)
+  {
+    gen(code[i]);
+
+    // 式の評価結果としてスタックに一つの値が残っている
+    // はずなので，スタックが溢れないようにポップ
+    printf("  pop rax\n");
+  }
+
+  // エピローグ
+  // 最後の式の結果がRAXに残っているのでそれが返り値になる
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
   printf("  ret\n");
   return 0;
 }
