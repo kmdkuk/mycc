@@ -1,12 +1,12 @@
 #ifndef MYCC_H
 #define MYCC_H
 
-typedef struct
+// トークンの方を表す値
+enum
 {
-  void **data;
-  int capacity;
-  int len;
-} Vector;
+  TK_NUM = 256, // 整数トークン
+  TK_EOF,       // 入力の終わりを表すトークン
+};
 
 // トークンの型
 typedef struct
@@ -15,6 +15,13 @@ typedef struct
   int val;     // tyがTK_NUMの場合，その数値
   char *input; // トークン文字列(エラーメッセージ用)
 } Token;
+
+typedef struct
+{
+  Token *data;
+  int capacity;
+  int len;
+} Vector;
 
 typedef struct Node
 {
@@ -25,7 +32,7 @@ typedef struct Node
 } Node;
 
 Vector *new_vector();
-void vec_push(Vector *vec, void *elem);
+void vec_push(Vector *vec, Token elem);
 
 Node *add();
 Node *mul();

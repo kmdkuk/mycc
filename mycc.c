@@ -19,26 +19,24 @@ void runtest()
   expect(__LINE__, 0, vec->len);
 
   for (int i = 0; i < 100; i++)
-    vec_push(vec, (void *)i);
+  {
+    Token *token = (Token *)malloc(sizeof(Token));
+    token->ty = TK_NUM;
+    token->val = i;
+    vec_push(vec, *token);
+  }
 
   expect(__LINE__, 100, vec->len);
-  expect(__LINE__, 0, (int)vec->data[0]);
-  expect(__LINE__, 50, (int)vec->data[50]);
-  expect(__LINE__, 99, (int)vec->data[99]);
+  expect(__LINE__, 0, vec->data[0].val);
+  expect(__LINE__, 50, vec->data[50].val);
+  expect(__LINE__, 99, vec->data[99].val);
 
   printf("OK\n");
 }
 
-// トークンの方を表す値
-enum
-{
-  TK_NUM = 256, // 整数トークン
-  TK_EOF,       // 入力の終わりを表すトークン
-};
-
 // トークナイズした結果のトークン列はこの配列に保存する．
 // 100個以上のトークンは来ないものとする
-Token tokens[100];
+Vector *tokens;
 int pos = 0;
 
 // エラーを報告するための関数
@@ -55,7 +53,7 @@ enum
 
 Node *new_node(int ty, Node *lhs, Node *rhs)
 {
-  Node *node = malloc(sizeof(Node));
+  Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ty;
   node->lhs = lhs;
   node->rhs = rhs;
@@ -64,7 +62,7 @@ Node *new_node(int ty, Node *lhs, Node *rhs)
 
 Node *new_node_num(int val)
 {
-  Node *node = malloc(sizeof(Node));
+  Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_NUM;
   node->val = val;
   return node;
@@ -72,8 +70,10 @@ Node *new_node_num(int val)
 
 int consume(int ty)
 {
-  if (tokens[pos].ty != ty)
+  if (tokens->data[pos].ty != ty) // ここでセグフォ
+  {
     return 0;
+  }
   pos++;
   return 1;
 }
@@ -84,14 +84,14 @@ Node *term()
   {
     Node *node = add();
     if (!consume(')'))
-      error("開きカッコに対応する閉じカッコがありません： %s\n", tokens[pos].input);
+      error("開きカッコに対応する閉じカッコがありません： %s\n", tokens->data[pos].input);
     return node;
   }
 
-  if (tokens[pos].ty == TK_NUM)
-    return new_node_num(tokens[pos++].val);
+  if (tokens->data[pos].ty == TK_NUM)
+    return new_node_num(tokens->data[pos++].val);
 
-  error("数値でも開きカッコでもないトークンです： %s\n", tokens[pos].input);
+  error("数値でも開きカッコでもないトークンです： %s\n", tokens->data[pos].input);
 }
 
 Node *mul()
@@ -126,27 +126,33 @@ Node *add()
 
 Vector *new_vector()
 {
-  Vector *vec = malloc(sizeof(Vector));
-  vec->data = malloc(sizeof(void *) * 16);
+  Vector *vec = (Vector *)malloc(sizeof(Vector));
+  vec->data = (Token *)malloc(sizeof(Token) * 16);
   vec->capacity = 16;
   vec->len = 0;
   return vec;
 }
 
-void vec_push(Vector *vec, void *elem)
+void vec_push(Vector *vec, Token elem)
 {
   if (vec->capacity == vec->len)
   {
     vec->capacity *= 2;
-    vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+    vec->data = (Token *)realloc(vec->data, sizeof(Token) * vec->capacity);
   }
   vec->data[vec->len++] = elem;
 }
 
-// pが指している文字列をトークンに分割してtokensに保存する
-void tokenize(char *p)
+Token *new_token()
 {
-  int i = 0;
+  Token *token = (Token *)malloc(sizeof(Token));
+  return token;
+}
+
+// pが指している文字列をトークンに分割してtokensに保存する
+void *tokenize(char *p)
+{
+  tokens = new_vector();
   while (*p)
   {
     // 空白文字をスキップ
@@ -158,27 +164,31 @@ void tokenize(char *p)
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
     {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      i++;
+      Token *token = new_token();
+      token->ty = *p;
+      token->input = p;
+      vec_push(tokens, *token);
       p++;
       continue;
     }
 
     if (isdigit(*p))
     {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+      Token *token = new_token();
+      token->ty = TK_NUM;
+      token->input = p;
+      token->val = strtol(p, &p, 10);
+      vec_push(tokens, *token);
       continue;
     }
 
     error("トークナイズできません： %s\n", p);
   }
 
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
+  Token *token = new_token();
+  token->ty = TK_EOF;
+  token->input = p;
+  vec_push(tokens, *token);
 }
 
 void gen(Node *node)
@@ -216,15 +226,16 @@ void gen(Node *node)
 
 int main(int argc, char **argv)
 {
-  if (strcmp(argv[1], "-test") == 0)
-  {
-    runtest();
-    return 0;
-  }
   if (argc != 2)
   {
     fprintf(stderr, "引数の個数が正しくありません\n");
     return 1;
+  }
+
+  if (strcmp(argv[1], "-test") == 0)
+  {
+    runtest();
+    return 0;
   }
 
   // トークナイズしてパースする．
