@@ -20,16 +20,13 @@ void runtest()
 
   for (int i = 0; i < 100; i++)
   {
-    Token *token = (Token *)malloc(sizeof(Token));
-    token->ty = TK_NUM;
-    token->val = i;
-    vec_push(vec, *token);
+    vec_push(vec, (void *)i);
   }
 
   expect(__LINE__, 100, vec->len);
-  expect(__LINE__, 0, vec->data[0].val);
-  expect(__LINE__, 50, vec->data[50].val);
-  expect(__LINE__, 99, vec->data[99].val);
+  expect(__LINE__, 0, (int)vec->data[0]);
+  expect(__LINE__, 50, (int)vec->data[50]);
+  expect(__LINE__, 99, (int)vec->data[99]);
 
   printf("OK\n");
 }
@@ -82,9 +79,10 @@ Node *new_node_name(char *name)
   return node;
 }
 
+// (Token *)tokens->data[pos])->ty と 引数が等しい場合posを進める．
 int consume(int ty)
 {
-  if (tokens->data[pos].ty != ty)
+  if (((Token *)tokens->data[pos])->ty != ty)
   {
     return 0;
   }
@@ -98,17 +96,17 @@ Node *term()
   {
     Node *node = add();
     if (!consume(')'))
-      error("開きカッコに対応する閉じカッコがありません： %s\n", tokens->data[pos].input);
+      error("開きカッコに対応する閉じカッコがありません： %s\n", ((Token *)tokens->data[pos])->input);
     return node;
   }
 
-  if (tokens->data[pos].ty == TK_NUM)
-    return new_node_num(tokens->data[pos++].val);
+  if (((Token *)tokens->data[pos])->ty == TK_NUM)
+    return new_node_num(((Token *)tokens->data[pos++])->val);
 
-  if (tokens->data[pos].ty == TK_IDENT)
-    return new_node_name(tokens->data[pos++].input);
+  if (((Token *)tokens->data[pos])->ty == TK_IDENT)
+    return new_node_name(((Token *)tokens->data[pos++])->input);
 
-  error("a-zの変数，数値，開きカッコでもないトークンです： %s\n", tokens->data[pos].input);
+  error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", ((Token *)tokens->data[pos])->input);
 }
 
 Node *mul()
@@ -144,7 +142,7 @@ Node *add()
 void program()
 {
   int i = 0;
-  while (tokens->data[pos].ty != TK_EOF)
+  while (((Token *)tokens->data[pos])->ty != TK_EOF)
     code[i++] = stmt();
   code[i] = NULL;
 }
@@ -153,7 +151,7 @@ Node *stmt()
 {
   Node *node = assign();
   if (!consume(';'))
-    error("';'ではないトークンです: %s", tokens->data[pos].input);
+    error("';'ではないトークンです: %s", ((Token *)tokens->data[pos])->input);
   return node;
 }
 
@@ -172,18 +170,18 @@ Node *assign()
 Vector *new_vector()
 {
   Vector *vec = (Vector *)malloc(sizeof(Vector));
-  vec->data = (Token *)malloc(sizeof(Token) * 16);
+  vec->data = malloc(sizeof(void *) * 16);
   vec->capacity = 16;
   vec->len = 0;
   return vec;
 }
 
-void vec_push(Vector *vec, Token elem)
+void vec_push(Vector *vec, void *elem)
 {
   if (vec->capacity == vec->len)
   {
     vec->capacity *= 2;
-    vec->data = (Token *)realloc(vec->data, sizeof(Token) * vec->capacity);
+    vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
   }
   vec->data[vec->len++] = elem;
 }
@@ -212,7 +210,7 @@ void *tokenize(char *p)
       Token *token = new_token();
       token->ty = *p;
       token->input = p;
-      vec_push(tokens, *token);
+      vec_push(tokens, (void *)token);
       p++;
       continue;
     }
@@ -223,7 +221,7 @@ void *tokenize(char *p)
       token->ty = TK_NUM;
       token->input = p;
       token->val = strtol(p, &p, 10);
-      vec_push(tokens, *token);
+      vec_push(tokens, (void *)token);
       continue;
     }
 
@@ -232,7 +230,7 @@ void *tokenize(char *p)
       Token *token = new_token();
       token->ty = TK_IDENT;
       token->input = p;
-      vec_push(tokens, *token);
+      vec_push(tokens, (void *)token);
       p++;
       continue;
     }
@@ -243,7 +241,7 @@ void *tokenize(char *p)
   Token *token = new_token();
   token->ty = TK_EOF;
   token->input = p;
-  vec_push(tokens, *token);
+  vec_push(tokens, (void *)token);
 }
 
 void gen_lval(Node *node)

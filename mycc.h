@@ -23,7 +23,7 @@ typedef struct
 
 typedef struct
 {
-  Token *data;
+  void **data;
   int capacity;
   int len;
 } Vector;
@@ -38,7 +38,7 @@ typedef struct Node
 } Node;
 
 Vector *new_vector();
-void vec_push(Vector *vec, Token elem);
+void vec_push(Vector *vec, void *elem);
 
 void program();
 Node *stmt();
