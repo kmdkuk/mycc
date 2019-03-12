@@ -28,6 +28,12 @@ typedef struct
   int len;
 } Vector;
 
+typedef struct
+{
+  Vector *keys;
+  Vector *vals;
+} Map;
+
 typedef struct Node
 {
   int ty;           // 演算子がND_NUM, ND_IDENT
@@ -39,6 +45,10 @@ typedef struct Node
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
+
+Map *new_map();
+void map_put(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
 
 void program();
 Node *stmt();
