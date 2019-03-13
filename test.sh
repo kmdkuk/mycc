@@ -33,5 +33,14 @@ a = 3;
 b = 5 * 6 - 8;
 a + b /2;
 "
+try 3 "
+aaa = 3;
+aaa;
+"
+try 14 "
+abc= 3;
+xyz = 5 * 6 - 8;
+abc + xyz /2;
+"
 
 echo OK

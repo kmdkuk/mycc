@@ -58,6 +58,9 @@ int pos = 0;
 // 複数の式を保存するための配列
 Node *code[100];
 
+// 変数を保存するための配列
+Map *variables;
+
 // エラーを報告するための関数
 void error(char *fmt, ...)
 {
@@ -95,7 +98,9 @@ Node *new_node_name(char *name)
 {
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_IDENT;
-  node->name = name[0];
+  node->name = malloc(sizeof(char) * strlen(name));
+  strcpy(node->name, name);
+  map_put(variables, name, (void *)variables->keys->len);
   return node;
 }
 
@@ -161,6 +166,7 @@ Node *add()
 
 void program()
 {
+  variables = new_map();
   int i = 0;
   while (((Token *)tokens->data[pos])->ty != TK_EOF)
     code[i++] = stmt();
@@ -296,7 +302,7 @@ void gen_lval(Node *node)
   if (node->ty != ND_IDENT)
     error("代入の左辺値が変数ではありません．");
 
-  int offset = ('z' - node->name + 1) * 8;
+  int offset = ((int)map_get(variables, node->name)) * 8;
   printf("  mov rax, rbp\n");
   printf("  sub rax, %d\n", offset);
   printf("  push rax\n");
@@ -383,7 +389,7 @@ int main(int argc, char **argv)
   // 変数26個分の領域を確保する
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
-  printf("  sub rsp, %d\n", 8 * 26);
+  printf("  sub rsp, %d\n", 8 * variables->keys->len);
 
   // 先頭の式から順にコード生成
   for (int i = 0; code[i]; i++)

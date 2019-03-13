@@ -40,7 +40,7 @@ typedef struct Node
   struct Node *lhs; // 左辺
   struct Node *rhs; // 右辺
   int val;          // tyがND_NUMの場合のみ使う
-  char name;        // tyがND_IDENTの場合のみ使う
+  char *name;       // tyがND_IDENTの場合のみ使う
 } Node;
 
 Vector *new_vector();
