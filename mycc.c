@@ -269,11 +269,16 @@ void *tokenize(char *p)
 
     if ('a' <= *p && *p <= 'z')
     {
+      int var_len = 0;
+      while ('a' <= *(p + var_len) && *(p + var_len) <= 'z')
+        var_len++;
       Token *token = new_token();
       token->ty = TK_IDENT;
-      token->input = p;
+      token->input = malloc(sizeof(char) * (var_len + 2));
+      strncpy(token->input, p, var_len);
+      token->input[var_len] = '\0';
       vec_push(tokens, (void *)token);
-      p++;
+      p += var_len;
       continue;
     }
 
