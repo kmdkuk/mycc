@@ -1,7 +1,11 @@
-CC := gcc
-CFLAGS := -std=c11
+CC = gcc
+CFLAGS = -Wall -std=c11
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS: .c=.o)
 
-mycc: mycc.c
+mycc: $(OBJS)
+
+$(OBJS): mycc.h
 
 test: mycc
 	./mycc -test
