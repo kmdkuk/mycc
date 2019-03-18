@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int expect(int line, int expected, int actual)
+static void expect(int line, int expected, int actual)
 {
   if (expected == actual)
     return 0;
@@ -12,7 +12,7 @@ int expect(int line, int expected, int actual)
   exit(1);
 }
 
-void test_vec()
+static void test_vec()
 {
   Vector *vec = new_vector();
   expect(__LINE__, 0, vec->len);
@@ -28,7 +28,7 @@ void test_vec()
   expect(__LINE__, 99, (int)vec->data[99]);
 }
 
-void test_map()
+static void test_map()
 {
   Map *map = new_map();
   expect(__LINE__, 0, (int)map_get(map, "foo"));

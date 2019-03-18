@@ -3,6 +3,17 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+Map *keywords;
+
+static void expect(int ty)
+{
+  Token *t = tokens->data[pos];
+  if (t->ty != ty)
+    error("%c (%d) expected, but got %c (%d)", ty, ty, t->ty, t->ty);
+  pos++;
+}
 
 Token *new_token()
 {
@@ -42,6 +53,9 @@ int check_symbols(char *p)
 // pが指している文字列をトークンに分割してtokensに保存する
 void *tokenize(char *p)
 {
+  keywords = new_map();
+  map_put(keywords, "return", (void *)TK_RETURN);
+
   // require init tokens;
   while (*p)
   {
@@ -91,10 +105,10 @@ void *tokenize(char *p)
       while (isalpha(*(p + var_len)))
         var_len++;
       Token *token = new_token();
-      token->ty = TK_IDENT;
-      token->input = malloc(sizeof(char) * (var_len + 2));
-      strncpy(token->input, p, var_len);
-      token->input[var_len] = '\0';
+      token->input = strndup(p, var_len);
+      token->ty = (intptr_t)map_get(keywords, token->input);
+      if (!token->ty)
+        token->ty = TK_IDENT;
       vec_push(tokens, (void *)token);
       p += var_len;
       continue;
@@ -117,14 +131,27 @@ void program()
   vec_push(code, (void *)NULL);
 }
 
+// 一つの式を抽象構文木にパース
 Node *stmt()
 {
-  Node *node = assign();
-  if (!consume(';'))
-    error("';'ではないトークンです: %s", ((Token *)tokens->data[pos])->input);
+  Token *token = tokens->data[pos];
+  Node *node = (Node *)malloc(sizeof(Node));
+  if (token->ty == TK_RETURN)
+  {
+    pos++;
+    node->ty = ND_RETURN;
+    node->expr = assign();
+    expect(';');
+    return node;
+  }
+
+  node->ty = ND_EXPR_STMT;
+  node->expr = assign();
+  expect(';');
   return node;
 }
 
+// 一つの式
 Node *assign()
 {
   Node *node = equality();

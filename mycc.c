@@ -53,7 +53,7 @@ int main(int argc, char **argv)
   // 先頭の式から順にコード生成
   for (int i = 0; (Node *)code->data[i]; i++)
   {
-    gen((Node *)code->data[i]);
+    gen(((Node *)code->data[i])->expr);
 
     // 式の評価結果としてスタックに一つの値が残っている
     // はずなので，スタックが溢れないようにポップ

@@ -5,9 +5,6 @@
 
 // container.c
 
-int expect(int line, int expected, int actual);
-void test_vec();
-void test_map();
 void runtest();
 void error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 typedef struct
@@ -34,6 +31,7 @@ void *map_get(Map *map, char *key);
 enum
 {
   TK_NUM = 256, // 整数トークン
+  TK_RETURN,    // return
   TK_IDENT,     // 識別子
   TK_EQ,        // ==
   TK_NE,        // !=
@@ -43,10 +41,12 @@ enum
 enum
 {
   ND_NUM = 256, // 整数ノードの型
+  ND_RETURN,    // Return statement
   ND_IDENT,     // 識別子のノードの型
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_CALL,      // function call
+  ND_EXPR_STMT, // Expressions statement
 };
 
 // トークンの型
@@ -59,12 +59,16 @@ typedef struct
 
 typedef struct Node
 {
-  int ty;           // 演算子がND_NUM, ND_IDENT
-  struct Node *lhs; // 左辺
-  struct Node *rhs; // 右辺
-  int val;          // tyがND_NUMの場合のみ使う
-  char *name;       // tyがND_IDENT,ND_CALLの場合に使う
-  Vector *args;     // 関数の引数
+  int ty;            // 演算子がND_NUM, ND_IDENT
+  struct Node *lhs;  // 左辺
+  struct Node *rhs;  // 右辺
+  int val;           // tyがND_NUMの場合のみ使う
+  struct Node *expr; // "return" or expression statement
+
+  char *name; // tyがND_IDENT,ND_CALLの場合に使う
+
+  // Function call
+  Vector *args; // 関数の引数
 } Node;
 
 void *tokenize(char *p);
