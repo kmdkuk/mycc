@@ -47,5 +47,9 @@ aBc= 3;
 Xyz = 5 * 6 - 8;
 aBc + Xyz /2;
 "
+try 1 "1==1;"
+try 0 "2==1;"
+try 1 "3 != 4;"
+try 0 "10 != 10;"
 
 echo OK

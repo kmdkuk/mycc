@@ -49,6 +49,16 @@ void gen(Node *node)
 
   switch (node->ty)
   {
+  case ND_EQ:
+    printf("  cmp rdi, rax\n");
+    printf("  sete al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case ND_NE:
+    printf("  cmp rdi, rax\n");
+    printf("  setne al\n");
+    printf("  movzb rax, al\n");
+    break;
   case '+':
     printf("  add rax, rdi\n");
     break;
@@ -63,5 +73,5 @@ void gen(Node *node)
     printf("  div rdi\n");
   }
 
-  printf(" push rax\n");
+  printf("  push rax\n");
 }

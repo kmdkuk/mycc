@@ -26,6 +26,19 @@ bool startswith(char *s1, char *s2)
   return !strncmp(s1, s2, strlen(s2));
 }
 
+int check_symbols(char *p)
+{
+  int i;
+  for (i = 0; symbols[i].name; i++)
+  {
+    char *name = symbols[i].name;
+    if (!startswith(p, name))
+      continue;
+    return i;
+  }
+  return i;
+}
+
 // pが指している文字列をトークンに分割してtokensに保存する
 void *tokenize(char *p)
 {
@@ -40,17 +53,15 @@ void *tokenize(char *p)
     }
 
     // Multi-letter symbox etc. == !=
-    for (int i = 0; symbols[i].name; i++)
+    int sym = check_symbols(p);
+    if (symbols[sym].name != NULL)
     {
-      char *name = symbols[i].name;
-      if (!startswith(p, name))
-        continue;
       Token *token = new_token();
-      token->ty = symbols[i].ty;
+      token->ty = symbols[sym].ty;
       token->input = p;
       vec_push(tokens, (void *)token);
-      p += strlen(name);
-      break;
+      p += strlen(symbols[sym].name);
+      continue;
     }
 
     // Single-letter symbol
