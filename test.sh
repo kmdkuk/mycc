@@ -53,6 +53,10 @@ try 1 "1==1;"
 try 0 "2==1;"
 try 1 "3 != 4;"
 try 0 "10 != 10;"
-try 7 "plus(3, 4, 5);"
+try 11 "
+a = 3;
+b = 4;
+plus(a+b, b);
+"
 
 echo OK

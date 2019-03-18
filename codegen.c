@@ -35,10 +35,16 @@ void gen(Node *node)
     char *arg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
     for (int i = 0; i < node->args->len; i++)
     {
-      printf("  mov %s, %d\n", arg[i], ((Node *)node->args->data[i])->val);
+      gen((Node *)node->args->data[i]);
     }
-    printf("  mov rax, 0\n");
+
+    for (int i = 0; i < node->args->len; i++)
+    {
+      printf("  pop rax\n");
+      printf("  mov %s, rax\n", arg[i]);
+    }
     printf("  call %s\n", node->name);
+    printf("  push rax\n");
     return;
   }
 
