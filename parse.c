@@ -22,7 +22,8 @@ void *tokenize(char *p)
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '=' || *p == ';')
+    // Single-letter symbol
+    if (strchr("+-*/()=;", *p))
     {
       Token *token = new_token();
       token->ty = *p;
@@ -42,10 +43,10 @@ void *tokenize(char *p)
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z')
+    if (isalpha(*p))
     {
       int var_len = 0;
-      while ('a' <= *(p + var_len) && *(p + var_len) <= 'z')
+      while (isalpha(*(p + var_len)))
         var_len++;
       Token *token = new_token();
       token->ty = TK_IDENT;

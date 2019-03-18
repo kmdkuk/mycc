@@ -42,5 +42,10 @@ abc= 3;
 xyz = 5 * 6 - 8;
 abc + xyz /2;
 "
+try 14 "
+aBc= 3;
+Xyz = 5 * 6 - 8;
+aBc + Xyz /2;
+"
 
 echo OK
