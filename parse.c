@@ -2,11 +2,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 Token *new_token()
 {
   Token *token = (Token *)malloc(sizeof(Token));
   return token;
+}
+
+static struct
+{
+  char *name;
+  int ty;
+} symbols[] = {
+    {"==", TK_EQ},
+    {"!=", TK_NE},
+    {NULL, 0},
+};
+
+// Returns true if s1 starts with s2.
+bool startswith(char *s1, char *s2)
+{
+  return !strncmp(s1, s2, strlen(s2));
 }
 
 // pが指している文字列をトークンに分割してtokensに保存する
@@ -20,6 +37,20 @@ void *tokenize(char *p)
     {
       p++;
       continue;
+    }
+
+    // Multi-letter symbox etc. == !=
+    for (int i = 0; symbols[i].name; i++)
+    {
+      char *name = symbols[i].name;
+      if (!startswith(p, name))
+        continue;
+      Token *token = new_token();
+      token->ty = symbols[i].ty;
+      token->input = p;
+      vec_push(tokens, (void *)token);
+      p += strlen(name);
+      break;
     }
 
     // Single-letter symbol
@@ -70,7 +101,6 @@ void *tokenize(char *p)
 void program()
 {
   // require variables init
-  int i = 0;
   while (((Token *)tokens->data[pos])->ty != TK_EOF)
     vec_push(code, (void *)stmt());
   vec_push(code, (void *)NULL);
