@@ -7,7 +7,7 @@ Vector *tokens;
 int pos;
 
 // 複数の式を保存するための配列
-Node *code[100];
+Vector *code;
 
 // 変数を保存するための配列
 Map *variables;
@@ -16,6 +16,7 @@ void init()
 {
   pos = 0;
   tokens = new_vector();
+  code = new_vector();
   variables = new_map();
 }
 
@@ -44,15 +45,15 @@ int main(int argc, char **argv)
   printf("main:\n");
 
   // プロローグ
-  // 変数26個分の領域を確保する
+  // 使った個数分の変数領域を確保する
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
   printf("  sub rsp, %d\n", 8 * variables->keys->len);
 
   // 先頭の式から順にコード生成
-  for (int i = 0; code[i]; i++)
+  for (int i = 0; (Node *)code->data[i]; i++)
   {
-    gen(code[i]);
+    gen((Node *)code->data[i]);
 
     // 式の評価結果としてスタックに一つの値が残っている
     // はずなので，スタックが溢れないようにポップ

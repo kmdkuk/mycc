@@ -87,7 +87,7 @@ extern Vector *tokens;
 extern int pos;
 
 // 複数の式を保存するための配列
-extern Node *code[100];
+extern Vector *code;
 
 // 変数を保存するための配列
 extern Map *variables;

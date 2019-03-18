@@ -71,8 +71,8 @@ void program()
   // require variables init
   int i = 0;
   while (((Token *)tokens->data[pos])->ty != TK_EOF)
-    code[i++] = stmt();
-  code[i] = NULL;
+    vec_push(code, (void *)stmt());
+  vec_push(code, (void *)NULL);
 }
 
 Node *stmt()
