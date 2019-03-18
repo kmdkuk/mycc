@@ -63,7 +63,8 @@ typedef struct Node
   struct Node *lhs; // 左辺
   struct Node *rhs; // 右辺
   int val;          // tyがND_NUMの場合のみ使う
-  char *name;       // tyがND_IDENTの場合のみ使う
+  char *name;       // tyがND_IDENT,ND_CALLの場合に使う
+  Vector *args;     // 関数の引数
 } Node;
 
 void *tokenize(char *p);
@@ -80,7 +81,7 @@ int consume(int ty);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_name(char *name);
-Node *new_node_call(char *name);
+Node *new_node_call(char *name, Vector *args);
 
 // codegen.c
 

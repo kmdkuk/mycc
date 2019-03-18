@@ -65,7 +65,7 @@ void *tokenize(char *p)
     }
 
     // Single-letter symbol
-    if (strchr("+-*/()=;", *p))
+    if (strchr("+-*/()=;,", *p))
     {
       Token *token = new_token();
       token->ty = *p;
@@ -199,8 +199,14 @@ Node *term()
     Token *token = (Token *)tokens->data[pos++];
     if (!consume('('))
       return new_node_name(token->input);
+    Vector *args = new_vector();
     if (consume(')'))
-      return new_node_call(token->input);
+      return new_node_call(token->input, args);
+    vec_push(args, (void *)assign());
+    while (consume(','))
+      vec_push(args, (void *)assign());
+    if (consume(')'))
+      return new_node_call(token->input, args);
   }
 
   error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", ((Token *)tokens->data[pos])->input);
@@ -244,11 +250,12 @@ Node *new_node_name(char *name)
   return node;
 }
 
-Node *new_node_call(char *name)
+Node *new_node_call(char *name, Vector *args)
 {
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_CALL;
   node->name = malloc(sizeof(char) * strlen(name));
   strcpy(node->name, name);
+  node->args = args;
   return node;
 }

@@ -31,6 +31,13 @@ void gen(Node *node)
 
   if (node->ty == ND_CALL)
   {
+    // 引数を置くx86-64のABIで規定されている順番
+    char *arg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+    for (int i = 0; i < node->args->len; i++)
+    {
+      printf("  mov %s, %d\n", arg[i], ((Node *)node->args->data[i])->val);
+    }
+    printf("  mov rax, 0\n");
     printf("  call %s\n", node->name);
     return;
   }
