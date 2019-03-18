@@ -195,7 +195,13 @@ Node *term()
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
   if (((Token *)tokens->data[pos])->ty == TK_IDENT)
-    return new_node_name(((Token *)tokens->data[pos++])->input);
+  {
+    Token *token = (Token *)tokens->data[pos++];
+    if (!consume('('))
+      return new_node_name(token->input);
+    if (consume(')'))
+      return new_node_call(token->input);
+  }
 
   error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", ((Token *)tokens->data[pos])->input);
 }
@@ -235,5 +241,14 @@ Node *new_node_name(char *name)
   node->name = malloc(sizeof(char) * strlen(name));
   strcpy(node->name, name);
   map_put(variables, name, (void *)variables->keys->len);
+  return node;
+}
+
+Node *new_node_call(char *name)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node->ty = ND_CALL;
+  node->name = malloc(sizeof(char) * strlen(name));
+  strcpy(node->name, name);
   return node;
 }

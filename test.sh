@@ -5,7 +5,7 @@ try() {
   input="$2"
 
   ./mycc "$input" > tmp.s
-  gcc -o tmp tmp.s
+  gcc -o tmp tmp.s tmp-foo.o
   ./tmp
   actual="$?"
 
@@ -16,6 +16,8 @@ try() {
     exit 1
   fi
 }
+
+echo 'int foo() {printf("Call foo OK\n"); }' | gcc -xc -c -o tmp-foo.o -
 
 try 0 "0;"
 try 42 "42;"
@@ -51,5 +53,6 @@ try 1 "1==1;"
 try 0 "2==1;"
 try 1 "3 != 4;"
 try 0 "10 != 10;"
+try 0 "foo();"
 
 echo OK

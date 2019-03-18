@@ -46,6 +46,7 @@ enum
   ND_IDENT,     // 識別子のノードの型
   ND_EQ,        // ==
   ND_NE,        // !=
+  ND_CALL,      // function call
 };
 
 // トークンの型
@@ -79,6 +80,7 @@ int consume(int ty);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_name(char *name);
+Node *new_node_call(char *name);
 
 // codegen.c
 
