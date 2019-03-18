@@ -116,11 +116,25 @@ Node *stmt()
 
 Node *assign()
 {
-  Node *node = add();
+  Node *node = equality();
   for (;;)
   {
     if (consume('='))
       node = new_node('=', node, assign());
+    else
+      return node;
+  }
+}
+
+Node *equality()
+{
+  Node *node = add();
+  for (;;)
+  {
+    if (consume(TK_EQ))
+      node = new_node(ND_EQ, node, equality());
+    else if (consume(TK_NE))
+      node = new_node(ND_NE, node, equality());
     else
       return node;
   }

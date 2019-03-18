@@ -44,6 +44,8 @@ enum
 {
   ND_NUM = 256, // 整数ノードの型
   ND_IDENT,     // 識別子のノードの型
+  ND_EQ,        // ==
+  ND_NE,        // !=
 };
 
 // トークンの型
@@ -68,6 +70,7 @@ void *tokenize(char *p);
 void program();
 Node *stmt();
 Node *assign();
+Node *equality();
 Node *add();
 Node *mul();
 Node *term();
