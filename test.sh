@@ -58,5 +58,12 @@ a = 3;
 b = 4;
 return plus(a+b, b);
 "
+try 3 "
+a = 1;
+a;
+return 3;
+b = 2;
+b;
+"
 
 echo OK
