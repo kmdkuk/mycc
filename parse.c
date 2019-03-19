@@ -151,7 +151,7 @@ Node *function()
   return node;
 }
 
-// 一つの式を抽象構文木にパース
+// 複数の式を抽象構文木にパース
 Node *stmt()
 {
   Node *node = (Node *)malloc(sizeof(Node));

@@ -32,7 +32,14 @@ void gen(Node *node)
   {
     // 関数の中の先頭の式から順にコード生成
     for (int i = 0; i < node->stmts->len; i++)
+    {
       gen((Node *)node->stmts->data[i]);
+    }
+    return;
+  }
+  if (node->ty == ND_EXPR_STMT)
+  {
+    gen(node->expr);
     return;
   }
   if (node->ty == ND_RETURN)

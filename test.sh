@@ -30,6 +30,14 @@ main(){
   return (3+5)/2;
 }"
 try 3 "
+foo(){
+  return 3;
+}
+main(){
+  return foo();
+}
+"
+try 3 "
 main(){
   a = 3;
   return a;
