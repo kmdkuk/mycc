@@ -42,11 +42,13 @@ enum
 {
   ND_NUM = 256, // 整数ノードの型
   ND_RETURN,    // Return statement
+  ND_COMP_STMT, // Compound statement
+  ND_EXPR_STMT, // Expressions statement
   ND_IDENT,     // 識別子のノードの型
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_CALL,      // function call
-  ND_EXPR_STMT, // Expressions statement
+  ND_FUNC,      // funxtion definition
 };
 
 // トークンの型
@@ -64,6 +66,7 @@ typedef struct Node
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う
   struct Node *expr; // "return" or expression statement
+  Vector *stmts;
 
   char *name; // tyがND_IDENT,ND_CALLの場合に使う
 
@@ -74,6 +77,7 @@ typedef struct Node
 void *tokenize(char *p);
 
 void program();
+Node *function();
 Node *stmt();
 Node *assign();
 Node *equality();

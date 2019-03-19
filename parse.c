@@ -79,7 +79,7 @@ void *tokenize(char *p)
     }
 
     // Single-letter symbol
-    if (strchr("+-*/()=;,", *p))
+    if (strchr("+-*/()=;,{}", *p))
     {
       Token *token = new_token();
       token->ty = *p;
@@ -127,27 +127,60 @@ void program()
 {
   // require variables init
   while (((Token *)tokens->data[pos])->ty != TK_EOF)
-    vec_push(code, (void *)stmt());
+    vec_push(code, (void *)function());
   vec_push(code, (void *)NULL);
+}
+
+Node *function()
+{
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_FUNC;
+  node->args = new_vector();
+
+  Token *token = (Token *)tokens->data[pos];
+  if (token->ty != TK_IDENT)
+    error("function name expected, but got %s", token->input);
+  node->name = token->input;
+  pos++;
+
+  expect('(');
+  while (!consume(')'))
+    vec_push(node->args, term());
+  expect('{');
+  node->expr = stmt();
+  return node;
 }
 
 // 一つの式を抽象構文木にパース
 Node *stmt()
 {
-  Token *token = tokens->data[pos];
   Node *node = (Node *)malloc(sizeof(Node));
-  if (token->ty == TK_RETURN)
-  {
-    pos++;
-    node->ty = ND_RETURN;
-    node->expr = assign();
-    expect(';');
-    return node;
-  }
+  node->ty = ND_COMP_STMT;
+  node->stmts = new_vector();
 
-  node->ty = ND_EXPR_STMT;
-  node->expr = assign();
-  expect(';');
+  while (!consume('}'))
+  {
+    Token *token = tokens->data[pos];
+    if (token->ty == TK_EOF)
+      return node;
+
+    Node *expr = (Node *)malloc(sizeof(Node));
+
+    if (token->ty == TK_RETURN)
+    {
+      pos++;
+      expr->ty = ND_RETURN;
+      expr->expr = assign();
+    }
+    else
+    {
+      expr->ty = ND_EXPR_STMT;
+      expr->expr = assign();
+    }
+
+    vec_push(node->stmts, (void *)expr);
+    expect(';');
+  }
   return node;
 }
 

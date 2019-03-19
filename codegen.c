@@ -14,13 +14,41 @@ void gen_lval(Node *node)
 
 void gen(Node *node)
 {
+  if (node->ty == ND_FUNC)
+  {
+    // プロローグを書く
+    printf(".global %s\n", node->name);
+    printf("%s:\n", node->name);
+
+    // プロローグ
+    // 使った個数分の変数領域を確保する
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, %d\n", 8 * variables->keys->len);
+    gen(node->expr);
+    return;
+  }
+  if (node->ty == ND_COMP_STMT)
+  {
+    // 関数の中の先頭の式から順にコード生成
+    for (int i = 0; i < node->stmts->len; i++)
+      gen((Node *)node->stmts->data[i]);
+    return;
+  }
   if (node->ty == ND_RETURN)
   {
-    // エピローグ
+    gen(node->expr);
+
+    // 式の評価結果としてスタックに一つの値が残っている
+    // はずなので，スタックが溢れないようにポップ
+    printf("  pop rax\n");
+
+    // エピローグを書く
     // 最後の式の結果がRAXに残っているのでそれが返り値になる
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
+    return;
   }
 
   if (node->ty == ND_NUM)

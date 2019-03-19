@@ -41,29 +41,11 @@ int main(int argc, char **argv)
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
-  printf(".global main\n");
-  printf("main:\n");
 
-  // プロローグ
-  // 使った個数分の変数領域を確保する
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, %d\n", 8 * variables->keys->len);
-
-  // 先頭の式から順にコード生成
+  // 先頭の関数から順にコード生成
   for (int i = 0; (Node *)code->data[i]; i++)
   {
-    gen(((Node *)code->data[i])->expr);
-
-    // 式の評価結果としてスタックに一つの値が残っている
-    // はずなので，スタックが溢れないようにポップ
-    printf("  pop rax\n");
+    gen(((Node *)code->data[i]));
   }
-
-  // エピローグ
-  // 最後の式の結果がRAXに残っているのでそれが返り値になる
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  printf("  ret\n");
   return 0;
 }
