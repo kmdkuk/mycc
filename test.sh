@@ -81,5 +81,13 @@ main(){
   return plus(a+b, b);
 }
 "
+try 3 "
+bar(a){
+  return a;
+}
+main(){
+  return bar(3);
+}
+"
 
 echo OK
