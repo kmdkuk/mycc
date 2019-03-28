@@ -104,12 +104,17 @@ void gen(Node *node)
     return;
   }
 
+  // 以下オペレーターの場合
+  // 左辺と右辺を展開
   gen(node->lhs);
   gen(node->rhs);
 
+  // それぞれ展開したあとの数値がスタックに積まれているので
+  // rdiとtaxにポップ
   printf("  pop rdi\n");
   printf("  pop rax\n");
 
+  // それぞれのオペレーターに応じた計算
   switch (node->ty)
   {
   case ND_EQ:
