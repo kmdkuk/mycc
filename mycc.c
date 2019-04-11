@@ -42,11 +42,14 @@ int main(int argc, char **argv)
 
   // アセンブリの前半部分を出力
   mycc_out(".intel_syntax noprefix\n");
+  mycc_out(".global main\n");
 
   // 先頭の関数から順にコード生成
   for (int i = 0; (Node *)code->data[i]; i++)
   {
+    debug_out("%d 個目の関数のアセンブリ生成 start\n", i);
     gen(((Node *)code->data[i]));
+    debug_out("%d 個目の関数のアセンブリ生成 done\n", i);
   }
   return 0;
 }

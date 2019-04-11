@@ -6,7 +6,7 @@
 static void expect(int line, int expected, int actual)
 {
   if (expected == actual)
-    return 0;
+    return;
   fprintf(stderr, "%d: %d expected, but got %d\n",
           line, expected, actual);
   exit(1);
@@ -103,24 +103,26 @@ void *map_get(Map *map, char *key)
 
 void mycc_out(char *fmt, ...)
 {
+  va_list ap;
+  va_start(ap, fmt);
   const char *debug;
   debug = getenv("DEBUG");
   if (debug == NULL)
   {
-    va_list ap;
-    va_start(ap, fmt);
-    printf(fmt, ap);
+    vprintf(fmt, ap);
   }
+  va_end(ap);
 }
 
 void debug_out(char *fmt, ...)
 {
+  va_list ap;
+  va_start(ap, fmt);
   const char *debug;
   debug = getenv("DEBUG");
   if (debug)
   {
-    va_list ap;
-    va_start(ap, fmt);
-    printf(fmt, ap);
+    vprintf(fmt, ap);
   }
+  va_end(ap);
 }

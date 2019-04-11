@@ -17,7 +17,6 @@ void gen(Node *node)
   if (node->ty == ND_FUNC)
   {
     // プロローグを書く
-    mycc_out(".global %s\n", node->name);
     mycc_out("%s:\n", node->name);
 
     // プロローグ

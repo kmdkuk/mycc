@@ -53,6 +53,7 @@ int check_symbols(char *p)
 // pが指している文字列をトークンに分割してtokensに保存する
 void *tokenize(char *p)
 {
+  debug_out("tokenize start\n");
   keywords = new_map();
   map_put(keywords, "return", (void *)TK_RETURN);
 
@@ -121,14 +122,17 @@ void *tokenize(char *p)
   token->ty = TK_EOF;
   token->input = p;
   vec_push(tokens, (void *)token);
+  debug_out("tokenize done\n");
 }
 
 void program()
 {
+  debug_out("抽象構文木生成 start\n");
   // require variables init
   while (((Token *)tokens->data[pos])->ty != TK_EOF)
     vec_push(code, (void *)function());
   vec_push(code, (void *)NULL);
+  debug_out("抽象構文木生成　done\n");
 }
 
 Node *function()
