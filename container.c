@@ -100,3 +100,27 @@ void *map_get(Map *map, char *key)
       return map->vals->data[i];
   return NULL;
 }
+
+void mycc_out(char *fmt, ...)
+{
+  const char *debug;
+  debug = getenv("DEBUG");
+  if (debug == NULL)
+  {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(fmt, ap);
+  }
+}
+
+void debug_out(char *fmt, ...)
+{
+  const char *debug;
+  debug = getenv("DEBUG");
+  if (debug)
+  {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(fmt, ap);
+  }
+}

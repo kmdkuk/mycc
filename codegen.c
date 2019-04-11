@@ -7,9 +7,9 @@ void gen_lval(Node *node)
     error("代入の左辺値が変数ではありません．");
 
   int offset = ((int)map_get(variables, node->name)) * 8;
-  printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", offset);
-  printf("  push rax\n");
+  mycc_out("  mov rax, rbp\n");
+  mycc_out("  sub rax, %d\n", offset);
+  mycc_out("  push rax\n");
 }
 
 void gen(Node *node)
@@ -17,14 +17,14 @@ void gen(Node *node)
   if (node->ty == ND_FUNC)
   {
     // プロローグを書く
-    printf(".global %s\n", node->name);
-    printf("%s:\n", node->name);
+    mycc_out(".global %s\n", node->name);
+    mycc_out("%s:\n", node->name);
 
     // プロローグ
     // 使った個数分の変数領域を確保する
-    printf("  push rbp\n");
-    printf("  mov rbp, rsp\n");
-    printf("  sub rsp, %d\n", 8 * variables->keys->len);
+    mycc_out("  push rbp\n");
+    mycc_out("  mov rbp, rsp\n");
+    mycc_out("  sub rsp, %d\n", 8 * variables->keys->len);
     gen(node->expr);
     return;
   }
@@ -48,28 +48,28 @@ void gen(Node *node)
 
     // 式の評価結果としてスタックに一つの値が残っている
     // はずなので，スタックが溢れないようにポップ
-    printf("  pop rax\n");
+    mycc_out("  pop rax\n");
 
     // エピローグを書く
     // 最後の式の結果がRAXに残っているのでそれが返り値になる
-    printf("  mov rsp, rbp\n");
-    printf("  pop rbp\n");
-    printf("  ret\n");
+    mycc_out("  mov rsp, rbp\n");
+    mycc_out("  pop rbp\n");
+    mycc_out("  ret\n");
     return;
   }
 
   if (node->ty == ND_NUM)
   {
-    printf("  push %d\n", node->val);
+    mycc_out("  push %d\n", node->val);
     return;
   }
 
   if (node->ty == ND_IDENT)
   {
     gen_lval(node);
-    printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
-    printf("  push rax\n");
+    mycc_out("  pop rax\n");
+    mycc_out("  mov rax, [rax]\n");
+    mycc_out("  push rax\n");
     return;
   }
 
@@ -84,11 +84,11 @@ void gen(Node *node)
 
     for (int i = 0; i < node->args->len; i++)
     {
-      printf("  pop rax\n");
-      printf("  mov %s, rax\n", arg[i]);
+      mycc_out("  pop rax\n");
+      mycc_out("  mov %s, rax\n", arg[i]);
     }
-    printf("  call %s\n", node->name);
-    printf("  push rax\n");
+    mycc_out("  call %s\n", node->name);
+    mycc_out("  push rax\n");
     return;
   }
 
@@ -97,10 +97,10 @@ void gen(Node *node)
     gen_lval(node->lhs);
     gen(node->rhs);
 
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-    printf("  mov [rax], rdi\n");
-    printf("  push rdi\n");
+    mycc_out("  pop rdi\n");
+    mycc_out("  pop rax\n");
+    mycc_out("  mov [rax], rdi\n");
+    mycc_out("  push rdi\n");
     return;
   }
 
@@ -111,35 +111,35 @@ void gen(Node *node)
 
   // それぞれ展開したあとの数値がスタックに積まれているので
   // rdiとtaxにポップ
-  printf("  pop rdi\n");
-  printf("  pop rax\n");
+  mycc_out("  pop rdi\n");
+  mycc_out("  pop rax\n");
 
   // それぞれのオペレーターに応じた計算
   switch (node->ty)
   {
   case ND_EQ:
-    printf("  cmp rdi, rax\n");
-    printf("  sete al\n");
-    printf("  movzb rax, al\n");
+    mycc_out("  cmp rdi, rax\n");
+    mycc_out("  sete al\n");
+    mycc_out("  movzb rax, al\n");
     break;
   case ND_NE:
-    printf("  cmp rdi, rax\n");
-    printf("  setne al\n");
-    printf("  movzb rax, al\n");
+    mycc_out("  cmp rdi, rax\n");
+    mycc_out("  setne al\n");
+    mycc_out("  movzb rax, al\n");
     break;
   case '+':
-    printf("  add rax, rdi\n");
+    mycc_out("  add rax, rdi\n");
     break;
   case '-':
-    printf("  sub rax, rdi\n");
+    mycc_out("  sub rax, rdi\n");
     break;
   case '*':
-    printf("  mul rdi\n");
+    mycc_out("  mul rdi\n");
     break;
   case '/':
-    printf("  mov rdx, 0\n");
-    printf("  div rdi\n");
+    mycc_out("  mov rdx, 0\n");
+    mycc_out("  div rdi\n");
   }
 
-  printf("  push rax\n");
+  mycc_out("  push rax\n");
 }

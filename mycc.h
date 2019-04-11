@@ -7,6 +7,8 @@
 
 void runtest();
 void error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void mycc_out(char *fmt, ...);
+void debug_out(char *fmt, ...);
 typedef struct
 {
   void **data;

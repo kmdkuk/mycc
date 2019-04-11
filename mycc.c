@@ -18,6 +18,7 @@ void init()
   tokens = new_vector();
   code = new_vector();
   variables = new_map();
+  debug_out("initialized!\n");
 }
 
 int main(int argc, char **argv)
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
   program();
 
   // アセンブリの前半部分を出力
-  printf(".intel_syntax noprefix\n");
+  mycc_out(".intel_syntax noprefix\n");
 
   // 先頭の関数から順にコード生成
   for (int i = 0; (Node *)code->data[i]; i++)

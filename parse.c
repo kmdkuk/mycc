@@ -144,12 +144,11 @@ Node *function()
   pos++;
 
   expect('(');
-  if(!consume(')'))
+  if (!consume(')'))
   {
     vec_push(node->args, term());
-    if((Node *)(node->args->data[node->args->len-1])->ty == ND_IDENT)
+    if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT)
     {
-
     }
     while (consume(','))
       vec_push(node->args, term());
