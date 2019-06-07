@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 try() {
   expected="$1"

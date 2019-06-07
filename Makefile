@@ -7,9 +7,9 @@ mycc: $(OBJS)
 
 $(OBJS): mycc.h
 
-test: mycc
-	./mycc -test
-	./test.sh
+test: mycc_docker
+	mycc ./mycc -test
+	mycc ./test.sh
 
 clean:
 	rm -f mycc *.o *~ tmp*

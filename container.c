@@ -107,6 +107,7 @@ void mycc_out(char *fmt, ...)
   va_start(ap, fmt);
   const char *debug;
   debug = getenv("DEBUG");
+  //printf("debug: %s\n", debug);
   if (debug == NULL)
   {
     vprintf(fmt, ap);
