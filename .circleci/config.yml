@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: kmdkuk/mycc
+
+    steps:
+      - checkout
+
+      - run:
+          name: test
+          command: make test
