@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.network "private_network", ip: "192.168.33.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
-  config.vm.synced_folder ".", "/vagrant", type:"virtualbox"
+  config.vm.synced_folder ".", "/home/vagrant/vagrant", type:"virtualbox"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -66,7 +66,12 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt update
-  #   apt-get install -y apache2
-    apt install -y gcc
+    # apt-get install -y apache2
+    apt upgrade
+    apt install -y gcc zsh git
+    git clone https://github.com/kmdkuk/MyDotFiles.git
+    cd MyDotFiles
+    ./setup.sh
+    ./setup_prezto.sh
   SHELL
 end
