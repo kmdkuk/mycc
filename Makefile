@@ -1,18 +1,16 @@
-CC = gcc
-CFLAGS = -Wall -std=c11
-SRCS = $(wildcard *.c)
-OBJS = $(SRCS: .c=.o)
+CFLAGS=-std=c11 -g -static
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
 
 mycc: $(OBJS)
-
-debug:
-	make "CFLAGS = -g -O0"
+	$(CC) -o mycc $(OBJS) $(LDFLAGS)
 
 $(OBJS): mycc.h
 
 test: mycc
-	./mycc -test
 	./test.sh
 
 clean:
 	rm -f mycc *.o *~ tmp*
+
+.PHONY: test clean

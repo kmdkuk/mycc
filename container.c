@@ -76,11 +76,13 @@ void vec_push(Vector *vec, void *elem)
     vec->capacity *= 2;
     vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
   }
-  vec->data[vec->len++] = elem;
+  vec->data[vec->len] = elem;
+  vec->len++;
 }
 
 Map *new_map()
 {
+  debug_out("new_map\n");
   Map *map = malloc(sizeof(Map));
   map->keys = new_vector();
   map->vals = new_vector();
@@ -89,6 +91,7 @@ Map *new_map()
 
 void map_put(Map *map, char *key, void *val)
 {
+  debug_out("map_put(map, %s, %s)", key, val);
   vec_push(map->keys, key);
   vec_push(map->vals, val);
 }

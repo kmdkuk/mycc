@@ -14,6 +14,7 @@ Map *variables;
 
 void init()
 {
+  debug_out("initialize start\n");
   pos = 0;
   tokens = new_vector();
   code = new_vector();

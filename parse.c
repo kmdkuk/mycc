@@ -55,8 +55,9 @@ void *tokenize(char *p)
 {
   debug_out("tokenize start\n");
   keywords = new_map();
+  debug_out("create keywords map\n");
   map_put(keywords, "return", (void *)TK_RETURN);
-
+  debug_out("set reserved word\n");
   // require init tokens;
   while (*p)
   {
@@ -71,6 +72,7 @@ void *tokenize(char *p)
     int sym = check_symbols(p);
     if (symbols[sym].name != NULL)
     {
+      debug_out("create Multi-letter symbol : %s\n", symbols[sym].name);
       Token *token = new_token();
       token->ty = symbols[sym].ty;
       token->input = p;
@@ -82,6 +84,7 @@ void *tokenize(char *p)
     // Single-letter symbol
     if (strchr("+-*/()=;,{}", *p))
     {
+      debug_out("create Single-letter symbol : %c\n", *p);
       Token *token = new_token();
       token->ty = *p;
       token->input = p;
@@ -96,6 +99,7 @@ void *tokenize(char *p)
       token->ty = TK_NUM;
       token->input = p;
       token->val = strtol(p, &p, 10);
+      debug_out("create digit token : %d\n", token->val);
       vec_push(tokens, (void *)token);
       continue;
     }
@@ -107,6 +111,7 @@ void *tokenize(char *p)
         var_len++;
       Token *token = new_token();
       token->input = strndup(p, var_len);
+      debug_out("create TK_IDENT token : %s\n", token->input);
       token->ty = (intptr_t)map_get(keywords, token->input);
       if (!token->ty)
         token->ty = TK_IDENT;
