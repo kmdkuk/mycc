@@ -1,4 +1,5 @@
-CFLAGS=-std=c11 -g -static
+CC=gcc
+CFLAGS=-std=c11 -g -static -fno-common -D_GNU_SOURCE
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 

@@ -5,76 +5,68 @@
 
 // container.c
 
-void runtest();
 void error(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void mycc_out(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void debug_out(char *fmt, ...) __attribute__((format(printf, 1, 2)));
-typedef struct
-{
-  void **data;
-  int capacity;
-  int len;
-} Vector;
-Vector *new_vector();
-void vec_push(Vector *vec, void *elem);
-
-typedef struct
-{
-  Vector *keys;
-  Vector *vals;
-} Map;
-Map *new_map();
-void map_put(Map *map, char *key, void *val);
-void *map_get(Map *map, char *key);
 
 // parse.c
 
 // トークンの方を表す値
-enum
-{
-  TK_NUM = 256, // 整数トークン
-  TK_RETURN,    // return
-  TK_IDENT,     // 識別子
-  TK_EQ,        // ==
-  TK_NE,        // !=
-  TK_EOF,       // 入力の終わりを表すトークン
-};
+typedef enum {
+  TK_NUM = 256,  // 整数トークン
+  TK_RESERVED,   // 予約語
+  TK_IDENT,      // 識別子
+  TK_EOF,        // 入力の終わりを表すトークン
+} TokenKind;
 
-enum
-{
-  ND_NUM = 256, // 整数ノードの型
-  ND_RETURN,    // Return statement
-  ND_COMP_STMT, // Compound statement
-  ND_EXPR_STMT, // Expressions statement
-  ND_IDENT,     // 識別子のノードの型
-  ND_EQ,        // ==
-  ND_NE,        // !=
-  ND_CALL,      // function call
-  ND_FUNC,      // funxtion definition
-};
+typedef enum {
+  ND_NUM = 256,  // 整数ノードの型
+  ND_RETURN,     // Return statement
+  ND_COMP_STMT,  // Compound statement
+  ND_EXPR_STMT,  // Expressions statement
+  ND_IDENT,      // 識別子のノードの型
+  ND_EQ,         // ==
+  ND_NE,         // !=
+  ND_CALL,       // function call
+  ND_FUNC,       // funxtion definition
+} NodeKind;
 
 // トークンの型
-typedef struct
-{
-  int ty;      // トークンの型
-  int val;     // tyがTK_NUMの場合，その数値
-  char *input; // トークン文字列(エラーメッセージ用)
-} Token;
+typedef struct Token Token;
+struct Token {
+  TokenKind kind;  // トークンの種類
+  Token *next;
+  int val;  // tyがTK_NUMの場合，その数値
+  char *str;
+};
 
-typedef struct Node
-{
-  int ty;            // 演算子がND_NUM, ND_IDENT
-  struct Node *lhs;  // 左辺
-  struct Node *rhs;  // 右辺
-  int val;           // tyがND_NUMの場合のみ使う
-  struct Node *expr; // "return" or expression statement
-  Vector *stmts;
+// variables
+typedef struct Var Var;
+struct Var {
+  char *name;
+};
 
-  char *name; // tyがND_IDENT,ND_CALLの場合に使う
+typedef struct VarList VarList;
+struct VarList {
+  VarList *next;
+  Var *var;
+};
+
+typedef struct Node Node;
+struct Node {
+  int ty;             // 演算子がND_NUM, ND_IDENT
+  struct Node *lhs;   // 左辺
+  struct Node *rhs;   // 右辺
+  int val;            // tyがND_NUMの場合のみ使う
+  struct Node *expr;  // "return" or expression statement
+
+  Node *next;
+
+  char *name;  // tyがND_IDENT,ND_CALLの場合に使う
 
   // Function call
-  Vector *args; // 関数の引数
-} Node;
+  Node *args;  // 関数の引数
+};
 
 void *tokenize(char *p);
 
@@ -91,7 +83,8 @@ int consume(int ty);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_name(char *name);
-Node *new_node_call(char *name, Vector *args);
+// Node *new_node_call(char *name, Node *args);
+Node *new_node_call(char *name, VarList *args);
 
 // codegen.c
 
@@ -101,14 +94,14 @@ void gen(Node *node);
 // main.c
 
 // トークナイズした結果のトークン列はこのVectorに保存する．
-extern Vector *tokens;
+extern Token *tokens;
 extern int pos;
 
-// 複数の式を保存するための配列
-extern Vector *code;
+// 複数の関数を保存するための配列
+extern Node *code;
 
 // 変数を保存するための配列
-extern Map *variables;
+extern VarList *variables;
 
 void init();
 

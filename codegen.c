@@ -1,21 +1,17 @@
 #include "mycc.h"
 #include "stdio.h"
 
-void gen_lval(Node *node)
-{
-  if (node->ty != ND_IDENT)
-    error("代入の左辺値が変数ではありません．");
+void gen_lval(Node *node) {
+  if (node->ty != ND_IDENT) error("代入の左辺値が変数ではありません．");
 
-  int offset = ((int)map_get(variables, node->name)) * 8;
+  // int offset = ((int)map_get(variables, node->name)) * 8;
   mycc_out("  mov rax, rbp\n");
-  mycc_out("  sub rax, %d\n", offset);
+  mycc_out("  sub rax, %d\n", 8);
   mycc_out("  push rax\n");
 }
 
-void gen(Node *node)
-{
-  if (node->ty == ND_FUNC)
-  {
+void gen(Node *node) {
+  if (node->ty == ND_FUNC) {
     // プロローグを書く
     mycc_out("%s:\n", node->name);
 
@@ -23,26 +19,23 @@ void gen(Node *node)
     // 使った個数分の変数領域を確保する
     mycc_out("  push rbp\n");
     mycc_out("  mov rbp, rsp\n");
-    mycc_out("  sub rsp, %d\n", 8 * variables->keys->len);
+    //  mycc_out("  sub rsp, %d\n", 8 * variables->keys->len);
     gen(node->expr);
     return;
   }
-  if (node->ty == ND_COMP_STMT)
-  {
+  if (node->ty == ND_COMP_STMT) {
     // 関数の中の先頭の式から順にコード生成
-    for (int i = 0; i < node->stmts->len; i++)
+    // for (int i = 0; i < node->stmts->len; i++)
     {
-      gen((Node *)node->stmts->data[i]);
+      // gen((Node *)node->stmts->data[i]);
     }
     return;
   }
-  if (node->ty == ND_EXPR_STMT)
-  {
+  if (node->ty == ND_EXPR_STMT) {
     gen(node->expr);
     return;
   }
-  if (node->ty == ND_RETURN)
-  {
+  if (node->ty == ND_RETURN) {
     gen(node->expr);
 
     // 式の評価結果としてスタックに一つの値が残っている
@@ -57,14 +50,12 @@ void gen(Node *node)
     return;
   }
 
-  if (node->ty == ND_NUM)
-  {
+  if (node->ty == ND_NUM) {
     mycc_out("  push %d\n", node->val);
     return;
   }
 
-  if (node->ty == ND_IDENT)
-  {
+  if (node->ty == ND_IDENT) {
     gen_lval(node);
     mycc_out("  pop rax\n");
     mycc_out("  mov rax, [rax]\n");
@@ -72,27 +63,23 @@ void gen(Node *node)
     return;
   }
 
-  if (node->ty == ND_CALL)
-  {
+  if (node->ty == ND_CALL) {
     // 引数を置くx86-64のABIで規定されている順番
     char *arg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
-    for (int i = 0; i < node->args->len; i++)
-    {
-      gen((Node *)node->args->data[i]);
-    }
+    // for (int i = 0; i < node->args->len; i++) {
+    // gen((Node *)node->args->data[i]);
+    //}
 
-    for (int i = 0; i < node->args->len; i++)
-    {
+    /*for (int i = 0; i < node->args->len; i++) {
       mycc_out("  pop rax\n");
       mycc_out("  mov %s, rax\n", arg[i]);
-    }
+    }*/
     mycc_out("  call %s\n", node->name);
     mycc_out("  push rax\n");
     return;
   }
 
-  if (node->ty == '=')
-  {
+  if (node->ty == '=') {
     gen_lval(node->lhs);
     gen(node->rhs);
 
@@ -114,30 +101,29 @@ void gen(Node *node)
   mycc_out("  pop rax\n");
 
   // それぞれのオペレーターに応じた計算
-  switch (node->ty)
-  {
-  case ND_EQ:
-    mycc_out("  cmp rdi, rax\n");
-    mycc_out("  sete al\n");
-    mycc_out("  movzb rax, al\n");
-    break;
-  case ND_NE:
-    mycc_out("  cmp rdi, rax\n");
-    mycc_out("  setne al\n");
-    mycc_out("  movzb rax, al\n");
-    break;
-  case '+':
-    mycc_out("  add rax, rdi\n");
-    break;
-  case '-':
-    mycc_out("  sub rax, rdi\n");
-    break;
-  case '*':
-    mycc_out("  mul rdi\n");
-    break;
-  case '/':
-    mycc_out("  mov rdx, 0\n");
-    mycc_out("  div rdi\n");
+  switch (node->ty) {
+    case ND_EQ:
+      mycc_out("  cmp rdi, rax\n");
+      mycc_out("  sete al\n");
+      mycc_out("  movzb rax, al\n");
+      break;
+    case ND_NE:
+      mycc_out("  cmp rdi, rax\n");
+      mycc_out("  setne al\n");
+      mycc_out("  movzb rax, al\n");
+      break;
+    case '+':
+      mycc_out("  add rax, rdi\n");
+      break;
+    case '-':
+      mycc_out("  sub rax, rdi\n");
+      break;
+    case '*':
+      mycc_out("  mul rdi\n");
+      break;
+    case '/':
+      mycc_out("  mov rdx, 0\n");
+      mycc_out("  div rdi\n");
   }
 
   mycc_out("  push rax\n");
