@@ -3,19 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 
-// トークナイズした結果のトークン列はこのVectorに保存する．
-Token *tokens;
-int pos;
-
+Token *tok_cur;
+char *user_input;
 // 複数の式を保存するための配列
 Node *code;
-
 // 変数を保存するための配列
 VarList *variables;
 
 void init() {
   debug_out("initialize start\n");
-  pos = 0;
   // tokens = new_token();
   // code = new_node();
   // variables = new_varlist();
@@ -28,9 +24,12 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  Token *tokens;
   // トークナイズしてパースする．
   init();
-  tokenize(argv[1]);
+  user_input = argv[1];
+  tok_cur = tokenize(user_input);
+  code = program();
   /*
   program();
 

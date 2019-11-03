@@ -7,12 +7,10 @@
 #include "mycc.h"
 
 static void expect(int ty) {
-  /*
-  Token *t = tokens->data[pos];
-  if (t->ty != ty)
-    error("%c (%d) expected, but got %c (%d)", ty, ty, t->ty, t->ty);
-  pos++;
-  */
+  if (tok_cur->str[0] != ty)
+    error("%c (%d) expected, but got %c (%d)", ty, ty, tok_cur->str[0],
+          tok_cur->str[0]);
+  tok_cur = tok_cur->next;
 }
 
 Token *new_token(TokenKind kind, Token *cur, char *str) {
@@ -43,7 +41,7 @@ char *starts_with_reserved(char *p) {
 }
 
 // pが指している文字列をトークンに分割してtokensに保存する
-void *tokenize(char *p) {
+Token *tokenize(char *p) {
   Token tokens = {};
   Token *cur = &tokens;
   debug_out("tokenize start\n");
@@ -97,67 +95,74 @@ void *tokenize(char *p) {
 
   cur = new_token(TK_EOF, cur, p);
   debug_out("tokenize done\n");
+  return tokens.next;
 }
 
-void program() {
-  debug_out("抽象構文木生成 start\n");
+Node *program() {
+  Node head = {};
+  Node *cur = &head;
+  debug_out("create AST\n");
   // require variables init
-  while (tokens->kind != TK_EOF) break;  // vec_push(code, (void *)function());
-  debug_out("抽象構文木生成　done\n");
+  while (tok_cur->kind != TK_EOF) {
+    cur->next = function();  // vec_push(code, (void *)function());
+    cur = cur->next;
+  }
+  debug_out("created AST\n");
+  return head.next;
 }
 
 Node *function() {
-  Node *node = malloc(sizeof(Node));
-  node->ty = ND_FUNC;
+  Node *func = calloc(1, sizeof(Node));
+  func->ty = ND_FUNC;
   // node->args = new_vector();
-  /*
-    Token *token = (Token *)tokens->data[pos];
-    if (token->ty != TK_IDENT)
-      error("function name expected, but got %s", token->input);
-    node->name = token->input;
-    pos++;
-
-    expect('(');
-    if (!consume(')')) {
-      vec_push(node->args, term());
-      if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT) {
-      }
-      while (consume(',')) vec_push(node->args, term());
-      expect(')');
+  if (tok_cur->kind != TK_IDENT)
+    error("function name expected, but got %s", tok_cur->str);
+  func->name = tok_cur->str;
+  tok_cur = tok_cur->next;
+  debug_out("create function node : %s\n", func->name);
+  debug_out("get args\n");
+  expect('(');
+  if (!consume(')')) {
+    /*
+    vec_push(node->args, term());
+    if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT) {
     }
-    expect('{');
-    node->expr = stmt();
-  */
-  return node;
+    while (consume(',')) vec_push(node->args, term());
+    */
+    expect(')');
+  }
+  expect('{');
+
+  Node head = {};
+  Node *cur = &head;
+  while (!consume('}')) {
+    cur->next = stmt();
+    cur = cur->next;
+  }
+  func->expr = head.next;
+  debug_out("created function node\n");
+  return func;
 }
 
 // 複数の式を抽象構文木にパース
 Node *stmt() {
-  Node *node = (Node *)malloc(sizeof(Node));
-  node->ty = ND_COMP_STMT;
-  // node->stmts = new_vector();
+  Node *expr = (Node *)malloc(sizeof(Node));
 
-  /*
-  while (!consume('}')) {
-    Token *token = tokens->data[pos];
-    if (token->ty == TK_EOF) return node;
-
-    Node *expr = (Node *)malloc(sizeof(Node));
-
-    if (token->ty == TK_RETURN) {
-      pos++;
-      expr->ty = ND_RETURN;
-      expr->expr = assign();
-    } else {
-      expr->ty = ND_EXPR_STMT;
-      expr->expr = assign();
-    }
-
-    vec_push(node->stmts, (void *)expr);
-    expect(';');
+  if (tok_cur->kind == TK_RESERVED && strcmp(tok_cur->str, "return") == 0) {
+    debug_out("create return statement\n");
+    tok_cur = tok_cur->next;
+    expr->ty = ND_RETURN;
+    expr->expr = assign();
+    debug_out("created return statement\n");
+  } else {
+    debug_out("create statement\n");
+    expr->ty = ND_EXPR_STMT;
+    expr->expr = assign();
+    debug_out("created statement\n");
   }
-  */
-  return node;
+
+  expect(';');
+  return expr;
 }
 
 // 一つの式
@@ -215,14 +220,17 @@ Node *term() {
   if (consume('(')) {
     Node *node = add();
     if (!consume(')'))
-      error("開きカッコに対応する閉じカッコがありません： %s\n", tokens->str);
+      error("開きカッコに対応する閉じカッコがありません： %s\n", tok_cur->str);
     return node;
   }
 
-  if (tokens->kind == TK_NUM) return new_node_num(tokens->val);
-
-  if (tokens->kind == TK_IDENT) {
-    Token *token = tokens;
+  if (tok_cur->kind == TK_NUM) {
+    int val = tok_cur->val;
+    tok_cur = tok_cur->next;
+    return new_node_num(val);
+  }
+  if (tok_cur->kind == TK_IDENT) {
+    Token *token = tok_cur;
     if (!consume('(')) return new_node_name(token->str);
     // Vector *args = new_vector();
     if (consume(')')) return new_node_call(token->str, NULL);
@@ -231,15 +239,15 @@ Node *term() {
     if (consume(')')) return new_node_call(token->str, NULL);
   }
 
-  error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", tokens->str);
+  error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", tok_cur->str);
 }
 
 // (Token *)tokens->data[pos])->ty と 引数が等しい場合posを進める．
 int consume(int ty) {
-  if (tokens->kind != ty) {
+  if (tok_cur->str[0] != ty) {
     return 0;
   }
-  pos++;
+  tok_cur = tok_cur->next;
   return 1;
 }
 
