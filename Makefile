@@ -1,17 +1,20 @@
 CC=gcc
 CFLAGS=-std=c11 -g -static -fno-common -D_GNU_SOURCE
 SRCS=$(wildcard *.c)
-OBJS=$(SRCS:.c=.o)
+OBJDIR=./obj
+OBJS=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
+TARGET=bin/mycc
 
-mycc: $(OBJS)
-	$(CC) -o mycc $(OBJS) $(LDFLAGS)
+$(TARGET): $(OBJS)
+	$(CC) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
-$(OBJS): mycc.h
+$(OBJDIR)/%.o: %.c
+	$(CC) -o  $@ -c $<
 
-test: mycc
+test: $(TARGET)
 	./test.sh
 
 clean:
-	rm -f mycc *.o *~ tmp*
+	rm -f $(TARGET) $(OBJDIR)/*.o *~ tmp*
 
 .PHONY: test clean
