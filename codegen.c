@@ -10,7 +10,7 @@ void gen_lval(Node *node) {
   mycc_out("  push rax\n");
 }
 
-void gen(Node *node) {
+Node *gen(Node *node) {
   if (node->ty == ND_FUNC) {
     // プロローグを書く
     mycc_out("%s:\n", node->name);
@@ -21,7 +21,7 @@ void gen(Node *node) {
     mycc_out("  mov rbp, rsp\n");
     //  mycc_out("  sub rsp, %d\n", 8 * variables->keys->len);
     gen(node->expr);
-    return;
+    return node->next;
   }
   if (node->ty == ND_COMP_STMT) {
     // 関数の中の先頭の式から順にコード生成
@@ -29,11 +29,11 @@ void gen(Node *node) {
     {
       // gen((Node *)node->stmts->data[i]);
     }
-    return;
+    return node->next;
   }
   if (node->ty == ND_EXPR_STMT) {
     gen(node->expr);
-    return;
+    return node->next;
   }
   if (node->ty == ND_RETURN) {
     gen(node->expr);
@@ -47,12 +47,12 @@ void gen(Node *node) {
     mycc_out("  mov rsp, rbp\n");
     mycc_out("  pop rbp\n");
     mycc_out("  ret\n");
-    return;
+    return node->next;
   }
 
   if (node->ty == ND_NUM) {
     mycc_out("  push %d\n", node->val);
-    return;
+    return node->next;
   }
 
   if (node->ty == ND_IDENT) {
@@ -60,7 +60,7 @@ void gen(Node *node) {
     mycc_out("  pop rax\n");
     mycc_out("  mov rax, [rax]\n");
     mycc_out("  push rax\n");
-    return;
+    return node->next;
   }
 
   if (node->ty == ND_CALL) {
@@ -76,7 +76,7 @@ void gen(Node *node) {
     }*/
     mycc_out("  call %s\n", node->name);
     mycc_out("  push rax\n");
-    return;
+    return node->next;
   }
 
   if (node->ty == '=') {
@@ -87,7 +87,7 @@ void gen(Node *node) {
     mycc_out("  pop rax\n");
     mycc_out("  mov [rax], rdi\n");
     mycc_out("  push rdi\n");
-    return;
+    return node->next;
   }
 
   // 以下オペレーターの場合
@@ -127,4 +127,5 @@ void gen(Node *node) {
   }
 
   mycc_out("  push rax\n");
+  return node->next;
 }

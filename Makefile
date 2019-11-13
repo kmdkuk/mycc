@@ -1,15 +1,15 @@
 CC=gcc
-CFLAGS=-std=c11 -g -static -fno-common -D_GNU_SOURCE
+CFLAGS=-std=c11 -Wall -g -O0 -static -fno-common -D_GNU_SOURCE
 SRCS=$(wildcard *.c)
 OBJDIR=./obj
 OBJS=$(addprefix $(OBJDIR)/, $(SRCS:.c=.o))
 TARGET=bin/mycc
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 $(OBJDIR)/%.o: %.c
-	$(CC) -o  $@ -c $<
+	$(CC) $(CFLAGS) -o  $@ -c $<
 
 test: $(TARGET)
 	./test.sh

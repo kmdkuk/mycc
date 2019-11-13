@@ -113,6 +113,7 @@ Node *program() {
 
 Node *function() {
   Node *func = calloc(1, sizeof(Node));
+  func->next = NULL;
   func->ty = ND_FUNC;
   // node->args = new_vector();
   if (tok_cur->kind != TK_IDENT)

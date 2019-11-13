@@ -70,7 +70,6 @@ struct Node {
   Node *next;
 
   char *name;  // tyがND_IDENT,ND_CALLの場合に使う
-
   // Function call
   Node *args;  // 関数の引数
 };
@@ -94,7 +93,7 @@ Node *new_node_call(char *name, VarList *args);
 // codegen.c
 
 void gen_lval(Node *node);
-void gen(Node *node);
+Node *gen(Node *node);
 
 // main.c
 extern char *user_input;

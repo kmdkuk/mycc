@@ -30,19 +30,18 @@ int main(int argc, char **argv) {
   user_input = argv[1];
   tok_cur = tokenize(user_input);
   code = program();
-  /*
-  program();
 
   // アセンブリの前半部分を出力
   mycc_out(".intel_syntax noprefix\n");
   mycc_out(".global main\n");
 
+  int i = 1;
   // 先頭の関数から順にコード生成
-  for (int i = 0; code->next; i++) {
+  do {
     debug_out("%d 個目の関数のアセンブリ生成 start\n", i);
-    // gen(code->);
+    code = gen(code);
     debug_out("%d 個目の関数のアセンブリ生成 done\n", i);
-  }
-  */
+    i++;
+  } while (code != NULL);
   return 0;
 }
