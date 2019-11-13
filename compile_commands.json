@@ -1,0 +1,46 @@
+[
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "obj/container.o",
+            "container.c"
+        ],
+        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
+        "file": "container.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "obj/mycc.o",
+            "mycc.c"
+        ],
+        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
+        "file": "mycc.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "obj/parse.o",
+            "parse.c"
+        ],
+        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
+        "file": "parse.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "obj/codegen.o",
+            "codegen.c"
+        ],
+        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
+        "file": "codegen.c"
+    }
+]
