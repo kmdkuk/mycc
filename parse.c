@@ -17,6 +17,9 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
   Token *token = calloc(1, sizeof(Token));
   token->kind = kind;
   token->str = str;
+  if (kind == TK_NUM) {
+    token->val = atoi(str);
+  }
   cur->next = token;
   return token;
 }
