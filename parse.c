@@ -235,9 +235,11 @@ Node *term() {
   }
   if (tok_cur->kind == TK_IDENT) {
     Token *token = tok_cur;
-    if (!consume('(')) return new_node_name(token->str);
+    tok_cur = tok_cur->next;
+    if (consume('(') == 0) return new_node_name(token->str);
     // Vector *args = new_vector();
     if (consume(')')) return new_node_call(token->str, NULL);
+
     // vec_push(args, (void *)assign());
     while (consume(',')) break;  // vec_push(args, (void *)assign());
     if (consume(')')) return new_node_call(token->str, NULL);
@@ -246,7 +248,9 @@ Node *term() {
   error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", tok_cur->str);
 }
 
-// (Token *)tokens->data[pos])->ty と 引数が等しい場合posを進める．
+// tok_cur と 引数が等しい場合posを進める．
+// 違った場合0
+// 等しかったら1進めて1
 int consume(int ty) {
   if (tok_cur->str[0] != ty) {
     return 0;
@@ -256,6 +260,7 @@ int consume(int ty) {
 }
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
+  debug_out("new_node %d %c\n", ty, ty);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ty;
   node->lhs = lhs;
@@ -264,6 +269,7 @@ Node *new_node(int ty, Node *lhs, Node *rhs) {
 }
 
 Node *new_node_num(int val) {
+  debug_out("new_node_num %d\n", val);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_NUM;
   node->val = val;
@@ -271,6 +277,7 @@ Node *new_node_num(int val) {
 }
 
 Node *new_node_name(char *name) {
+  debug_out("new_node_name %s\n", name);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_IDENT;
   node->name = malloc(sizeof(char) * strlen(name));
@@ -280,6 +287,7 @@ Node *new_node_name(char *name) {
 }
 
 Node *new_node_call(char *name, VarList *args) {
+  debug_out("new_node_call %s\n", name);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_CALL;
   node->name = malloc(sizeof(char) * strlen(name));

@@ -3,6 +3,12 @@
         "arguments": [
             "cc",
             "-c",
+            "-std=c11",
+            "-Wall",
+            "-g",
+            "-O0",
+            "-fno-common",
+            "-D_GNU_SOURCE",
             "-o",
             "obj/container.o",
             "container.c"
@@ -14,6 +20,12 @@
         "arguments": [
             "cc",
             "-c",
+            "-std=c11",
+            "-Wall",
+            "-g",
+            "-O0",
+            "-fno-common",
+            "-D_GNU_SOURCE",
             "-o",
             "obj/mycc.o",
             "mycc.c"
@@ -25,22 +37,34 @@
         "arguments": [
             "cc",
             "-c",
-            "-o",
-            "obj/parse.o",
-            "parse.c"
-        ],
-        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
-        "file": "parse.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
+            "-std=c11",
+            "-Wall",
+            "-g",
+            "-O0",
+            "-fno-common",
+            "-D_GNU_SOURCE",
             "-o",
             "obj/codegen.o",
             "codegen.c"
         ],
         "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
         "file": "codegen.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-std=c11",
+            "-Wall",
+            "-g",
+            "-O0",
+            "-fno-common",
+            "-D_GNU_SOURCE",
+            "-o",
+            "obj/parse.o",
+            "parse.c"
+        ],
+        "directory": "/home/kmdkuk/go/src/github.com/kmdkuk/mycc",
+        "file": "parse.c"
     }
 ]
