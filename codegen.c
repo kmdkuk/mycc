@@ -21,7 +21,11 @@ Node *gen(Node *node) {
     mycc_out("  push rbp\n");
     mycc_out("  mov rbp, rsp\n");
     mycc_out("  sub rsp, %d\n", 8 * count_vars());
-    gen(node->expr);
+    Node *node_cur = gen(node->expr);
+    while (node_cur != NULL) {
+      gen(node_cur);
+      node_cur = node_cur->next;
+    }
     return node->next;
   }
   if (node->ty == ND_COMP_STMT) {
