@@ -47,6 +47,10 @@ struct VarList {
   Var *var;
 };
 
+void add_var(char *name);
+int search_vars(char *name);
+int count_vars();
+
 typedef enum {
   ND_NUM = 256,  // 整数ノードの型
   ND_RETURN,     // Return statement

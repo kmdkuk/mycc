@@ -14,7 +14,7 @@ void init() {
   debug_out("initialize start\n");
   // tokens = new_token();
   // code = new_node();
-  // variables = new_varlist();
+  variables = (VarList *)malloc(sizeof(VarList));
   debug_out("initialized!\n");
 }
 

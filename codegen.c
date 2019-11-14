@@ -4,9 +4,10 @@
 void gen_lval(Node *node) {
   if (node->ty != ND_IDENT) error("代入の左辺値が変数ではありません．");
 
-  // int offset = ((int)map_get(variables, node->name)) * 8;
+  // Varlistから検索してくる
+  int offset = search_vars(node->name) * 8;
   mycc_out("  mov rax, rbp\n");
-  mycc_out("  sub rax, %d\n", 8);
+  mycc_out("  sub rax, %d\n", offset);
   mycc_out("  push rax\n");
 }
 
@@ -19,7 +20,7 @@ Node *gen(Node *node) {
     // 使った個数分の変数領域を確保する
     mycc_out("  push rbp\n");
     mycc_out("  mov rbp, rsp\n");
-    //  mycc_out("  sub rsp, %d\n", 8 * variables->keys->len);
+    mycc_out("  sub rsp, %d\n", 8 * count_vars());
     gen(node->expr);
     return node->next;
   }

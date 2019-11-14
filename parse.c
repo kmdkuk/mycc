@@ -282,7 +282,8 @@ Node *new_node_name(char *name) {
   node->ty = ND_IDENT;
   node->name = malloc(sizeof(char) * strlen(name));
   strcpy(node->name, name);
-  // map_put(variables, name, (void *)variables->keys->len);
+  // Varlistに追加
+  add_var(name);
   return node;
 }
 

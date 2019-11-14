@@ -55,3 +55,42 @@ void debug_out(char *fmt, ...) {
   }
   va_end(ap);
 }
+
+// varlistに追加する関数
+void add_var(char *name) {
+  VarList *var_cur = variables;
+  while (var_cur->next != NULL) {
+    if (strcmp(var_cur->var->name, name) == 0) {
+      debug_out("すでに登録されている変数でした。\n");
+      return;
+    }
+    var_cur = var_cur->next;
+  }
+  Var *var = (Var *)malloc(sizeof(Var));
+  var->name = (char *)malloc(sizeof(char) * strlen(name));
+  strcpy(var->name, name);
+  VarList *new_var = (VarList *)malloc(sizeof(VarList));
+  var_cur->var = var;
+  var_cur->next = new_var;
+  debug_out("変数 %s を登録しました。\n", name);
+}
+
+int search_vars(char *name) {
+  VarList *var_cur = variables;
+  int counter = 1;
+  while (strcmp(var_cur->var->name, name) != 0) {
+    if (var_cur->next == NULL) return -1;
+    counter++;
+    var_cur = var_cur->next;
+  }
+  return counter;
+}
+int count_vars() {
+  VarList *var_cur = variables;
+  int counter = 0;
+  while (var_cur->next != NULL) {
+    counter++;
+    var_cur = var_cur->next;
+  }
+  return counter;
+}
