@@ -78,6 +78,8 @@ struct Node {
   Node *args;  // 関数の引数
 };
 
+void push_node(Node *node, Node *item);
+
 Node *program();
 Node *function();
 Node *stmt();
@@ -91,8 +93,7 @@ int consume(char *keyword);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_name(char *name);
-// Node *new_node_call(char *name, Node *args);
-Node *new_node_call(char *name, VarList *args);
+Node *new_node_call(char *name, Node *args);
 
 // codegen.c
 

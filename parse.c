@@ -101,6 +101,14 @@ Token *tokenize(char *p) {
   return tokens.next;
 }
 
+void push_node(Node *node, Node *item) {
+  Node *cur = node;
+  while (cur->next != NULL) {
+    cur = cur->next;
+  }
+  cur->next = item;
+}
+
 Node *program() {
   Node head = {};
   Node *cur = &head;
@@ -238,13 +246,18 @@ Node *term() {
     if (consume("(") == 0) return new_node_name(token->str);
     // Vector *args = new_vector();
     if (consume(")")) return new_node_call(token->str, NULL);
-
+    Node *args = malloc(sizeof(Node));
     // vec_push(args, (void *)assign());
-    while (consume(",")) break;  // vec_push(args, (void *)assign());
-    if (consume(")")) return new_node_call(token->str, NULL);
+    push_node(args, assign());
+    while (consume(",")) {
+      // vec_push(args, (void *)assign());
+      push_node(args, assign());
+    }
+    if (consume(")")) return new_node_call(token->str, args->next);
   }
 
   error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", tok_cur->str);
+  return NULL;
 }
 
 // tok_cur と 引数が等しい場合posを進める．
@@ -259,7 +272,7 @@ int consume(char *keyword) {
 }
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
-  debug_out("new_node %d %c\n", ty, ty);
+  debug_out("new_node %d (%c)\n", ty, ty);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ty;
   node->lhs = lhs;
@@ -286,12 +299,12 @@ Node *new_node_name(char *name) {
   return node;
 }
 
-Node *new_node_call(char *name, VarList *args) {
+Node *new_node_call(char *name, Node *args) {
   debug_out("new_node_call %s\n", name);
   Node *node = (Node *)malloc(sizeof(Node));
   node->ty = ND_CALL;
   node->name = malloc(sizeof(char) * strlen(name));
   strcpy(node->name, name);
-  // node->args = args;
+  node->args = args;
   return node;
 }
