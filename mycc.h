@@ -87,7 +87,7 @@ Node *add();
 Node *mul();
 Node *term();
 
-int consume(int ty);
+int consume(char *keyword);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_name(char *name);

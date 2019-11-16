@@ -126,12 +126,12 @@ Node *function() {
   debug_out("create function node : %s\n", func->name);
   debug_out("get args\n");
   expect('(');
-  if (!consume(')')) {
+  if (!consume(")")) {
     /*
     vec_push(node->args, term());
     if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT) {
     }
-    while (consume(',')) vec_push(node->args, term());
+    while (consume(",")) vec_push(node->args, term());
     */
     expect(')');
   }
@@ -139,7 +139,7 @@ Node *function() {
 
   Node head = {};
   Node *cur = &head;
-  while (!consume('}')) {
+  while (!consume("}")) {
     cur->next = stmt();
     cur = cur->next;
   }
@@ -173,7 +173,7 @@ Node *stmt() {
 Node *assign() {
   Node *node = equality();
   for (;;) {
-    if (consume('='))
+    if (consume("="))
       node = new_node('=', node, assign());
     else
       return node;
@@ -182,15 +182,14 @@ Node *assign() {
 
 Node *equality() {
   Node *node = add();
-  /*
   for (;;) {
-    if (consume(TK_EQ))
+    if (consume("=="))
       node = new_node(ND_EQ, node, equality());
-    else if (consume(TK_NE))
+    else if (consume("!="))
       node = new_node(ND_NE, node, equality());
     else
       return node;
-  }*/
+  }
   return node;
 }
 
@@ -198,9 +197,9 @@ Node *add() {
   Node *node = mul();
 
   for (;;) {
-    if (consume('+'))
+    if (consume("+"))
       node = new_node('+', node, mul());
-    else if (consume('-'))
+    else if (consume("-"))
       node = new_node('-', node, mul());
     else
       return node;
@@ -211,9 +210,9 @@ Node *mul() {
   Node *node = term();
 
   for (;;) {
-    if (consume('*'))
+    if (consume("*"))
       node = new_node('*', node, term());
-    else if (consume('/'))
+    else if (consume("/"))
       node = new_node('/', node, term());
     else
       return node;
@@ -221,9 +220,9 @@ Node *mul() {
 }
 
 Node *term() {
-  if (consume('(')) {
+  if (consume("(")) {
     Node *node = add();
-    if (!consume(')'))
+    if (!consume(")"))
       error("開きカッコに対応する閉じカッコがありません： %s\n", tok_cur->str);
     return node;
   }
@@ -236,13 +235,13 @@ Node *term() {
   if (tok_cur->kind == TK_IDENT) {
     Token *token = tok_cur;
     tok_cur = tok_cur->next;
-    if (consume('(') == 0) return new_node_name(token->str);
+    if (consume("(") == 0) return new_node_name(token->str);
     // Vector *args = new_vector();
-    if (consume(')')) return new_node_call(token->str, NULL);
+    if (consume(")")) return new_node_call(token->str, NULL);
 
     // vec_push(args, (void *)assign());
-    while (consume(',')) break;  // vec_push(args, (void *)assign());
-    if (consume(')')) return new_node_call(token->str, NULL);
+    while (consume(",")) break;  // vec_push(args, (void *)assign());
+    if (consume(")")) return new_node_call(token->str, NULL);
   }
 
   error("a-zの変数，数値，開きカッコでもないトークンです：%s\n", tok_cur->str);
@@ -251,8 +250,8 @@ Node *term() {
 // tok_cur と 引数が等しい場合posを進める．
 // 違った場合0
 // 等しかったら1進めて1
-int consume(int ty) {
-  if (tok_cur->str[0] != ty) {
+int consume(char *keyword) {
+  if (strncmp(tok_cur->str, keyword, strlen(keyword))) {
     return 0;
   }
   tok_cur = tok_cur->next;
