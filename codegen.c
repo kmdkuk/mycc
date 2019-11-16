@@ -71,14 +71,20 @@ Node *gen(Node *node) {
   if (node->ty == ND_CALL) {
     // 引数を置くx86-64のABIで規定されている順番
     char *arg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
-    // for (int i = 0; i < node->args->len; i++) {
-    // gen((Node *)node->args->data[i]);
-    //}
+    Node *arg_cur = node->args;
+    while (arg_cur != NULL) {
+      gen(arg_cur);
+      arg_cur = arg_cur->next;
+    }
 
-    /*for (int i = 0; i < node->args->len; i++) {
+    arg_cur = node->args;
+    int i = 0;
+    while (arg_cur != NULL) {
       mycc_out("  pop rax\n");
       mycc_out("  mov %s, rax\n", arg[i]);
-    }*/
+      arg_cur = arg_cur->next;
+      i++;
+    }
     mycc_out("  call %s\n", node->name);
     mycc_out("  push rax\n");
     return node->next;
