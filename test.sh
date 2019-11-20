@@ -91,4 +91,13 @@ main(){
 }
 "
 
+try 1 "
+main(){
+  a = 1;
+  if(a == 1){
+    return 1;
+  }
+}
+"
+
 echo OK
