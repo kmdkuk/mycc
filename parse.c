@@ -127,6 +127,7 @@ Node *function() {
   func->next = NULL;
   func->ty = ND_FUNC;
   // node->args = new_vector();
+  variables = calloc(1, sizeof(VarList));
   if (tok_cur->kind != TK_IDENT)
     error("function name expected, but got %s", tok_cur->str);
   func->name = tok_cur->str;
@@ -135,12 +136,12 @@ Node *function() {
   debug_out("get args\n");
   expect('(');
   if (!consume(")")) {
-    /*
-    vec_push(node->args, term());
-    if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT) {
-    }
-    while (consume(",")) vec_push(node->args, term());
-    */
+    VarList *vars = malloc(sizeof(VarList));
+    push_node(vars, term());
+    // if (((Node *)(node->args->data[node->args->len - 1]))->ty == ND_IDENT) {
+    // }
+    while (consume(",")) push_node(vars, term());
+    func->args = vars;
     expect(')');
   }
   expect('{');
@@ -153,6 +154,7 @@ Node *function() {
   }
   func->expr = head.next;
   debug_out("created function node\n");
+  func->vars = variables;
   return func;
 }
 

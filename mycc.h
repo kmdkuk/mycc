@@ -76,6 +76,9 @@ struct Node {
   char *name;  // tyがND_IDENT,ND_CALLの場合に使う
   // Function call
   Node *args;  // 関数の引数
+
+  // having vars if ND_FUNC
+  VarList *vars;
 };
 
 void push_node(Node *node, Node *item);

@@ -13,6 +13,7 @@ void gen_lval(Node *node) {
 
 Node *gen(Node *node) {
   if (node->ty == ND_FUNC) {
+    variables = node->vars;
     // プロローグを書く
     mycc_out("%s:\n", node->name);
 
@@ -21,11 +22,29 @@ Node *gen(Node *node) {
     mycc_out("  push rbp\n");
     mycc_out("  mov rbp, rsp\n");
     mycc_out("  sub rsp, %d\n", 8 * count_vars());
+    // variablesにcallされたときに入っているであろう，argsを代入
+    // 参考ND_CALL，ND_CALLの逆をやる
+    char *arg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+    Node *arg_cur = node->args;
+
+    int i = 0;
+    while (arg_cur != NULL) {
+      if (arg_cur->next == NULL) break;
+      arg_cur = arg_cur->next;
+      gen_lval(arg_cur);
+      mycc_out("  push %s\n", arg[i]);
+      mycc_out("  pop rdi\n");
+      mycc_out("  pop rax\n");
+      mycc_out("  mov [rax], rdi\n");
+      mycc_out("  push rdi\n");
+      i++;
+    }
     Node *node_cur = gen(node->expr);
     while (node_cur != NULL) {
       gen(node_cur);
       node_cur = node_cur->next;
     }
+    variables = NULL;
     return node->next;
   }
   if (node->ty == ND_COMP_STMT) {
