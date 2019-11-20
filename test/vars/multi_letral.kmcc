@@ -1,0 +1,4 @@
+main(){
+  aaa = 3;
+  return aaa;
+}

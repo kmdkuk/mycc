@@ -1,0 +1,5 @@
+main(){
+  a = 3;
+  b = 4;
+  return plus(a + b, b);
+}

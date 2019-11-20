@@ -19,85 +19,26 @@ try() {
 }
 
 echo 'int plus(int x, int y) { return x + y; }' | gcc -xc -c -o tmp-plus.o -
-
-try 0 "main(){return 0;}"
-try 42 "main(){return 42;}"
-try 21 'main(){return 5+20-4;}'
-try 41 "main(){return 12 + 34 - 5 ;}"
-try 47 "main(){return 5+6*7;}"
-try 15 "main(){return 5*(9-6);}"
-try 4 "
-main(){
-  return (3+5)/2;
-}"
-try 3 "
-foo(){
-  return 3;
-}
-main(){
-  return foo();
-}
-"
-try 3 "
-main(){
-  a = 3;
-  return a;
-}
-"
-try 14 "
-main(){
-  a = 3;
-  b = 5 * 6 - 8;
-  return a + b /2;
-}
-"
-try 3 "
-main(){
-  aaa = 3;
-  return aaa;
-}
-"
-try 14 "
-main(){
-  abc= 3;
-  xyz = 5 * 6 - 8;
-  return abc + xyz /2;
-}
-"
-try 14 "
-main(){
-  aBc= 3;
-  Xyz = 5 * 6 - 8;
-  return aBc + Xyz /2;
-}
-"
-try 1 "main(){return 1==1;}"
-try 0 "main(){return 2==1;}"
-try 1 "main(){return 3 != 4;}"
-try 0 "main(){return 10!=10;}"
-try 11 "
-main(){
-  a = 3;
-  b = 4;
-  return plus(a+b, b);
-}
-"
-try 3 "
-bar(a){
-  return a;
-}
-main(){
-  return bar(3);
-}
-"
-
-try 1 "
-main(){
-  a = 1;
-  if(a == 1){
-    return 1;
-  }
-}
-"
+testdir="test"
+try 0 "$testdir/simple/return0.kmcc"
+try 42 "$testdir/simple/return42.kmcc"
+try 21 "$testdir/simple/return21.kmcc"
+try 41 "$testdir/simple/return41.kmcc"
+try 47 "$testdir/simple/return47.kmcc"
+try 15 "$testdir/simple/return15.kmcc"
+try 4 "$testdir/simple/return4.kmcc"
+try 3 "$testdir/function/simple_function.kmcc"
+try 3 "$testdir/vars/single_letral.kmcc"
+try 14 "$testdir/vars/single_letral2.kmcc"
+try 3 "$testdir/vars/multi_letral.kmcc"
+try 14 "$testdir/vars/multi_letral2.kmcc"
+try 14 "$testdir/vars/multi_letral3.kmcc"
+try 1 "$testdir/compare/equa.kmcc"
+try 0 "$testdir/compare/equa2.kmcc"
+try 1 "$testdir/compare/nequal.kmcc"
+try 0 "$testdir/compare/nequal2.kmcc"
+try 11 "$testdir/function/call.kmcc"
+try 3 "$testdir/function/definition.kmcc"
+try 1 "$testdir/control/if.kmcc"
 
 echo OK

@@ -1,0 +1,5 @@
+main(){
+  abc = 3;
+  xyz = 5 * 6 - 8;
+  return abc + xyz / 2;
+}

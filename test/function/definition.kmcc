@@ -1,0 +1,7 @@
+bar(a){
+  return a;
+}
+
+main(){
+  return bar(3);
+}

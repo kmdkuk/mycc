@@ -18,6 +18,17 @@ void init() {
   debug_out("initialized!\n");
 }
 
+char *read_file(char *path) {
+  FILE *fp = fopen(path, "r");
+  if (fp == NULL) error("cant not open %s.", path);
+  int filemax = 10 * 1024 * 1024;
+  char *buf = malloc(sizeof(char) * filemax);
+  int size = fread(buf, 1, filemax - 2, fp);
+  if (size == 0 || buf[size - 1] != '\n') buf[size++] = '\n';
+  buf[size] = '\0';
+  return buf;
+}
+
 int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "引数の個数が正しくありません\n");
@@ -27,7 +38,7 @@ int main(int argc, char **argv) {
   Token *tokens;
   // トークナイズしてパースする．
   init();
-  user_input = argv[1];
+  user_input = read_file(argv[1]);
   tok_cur = tokenize(user_input);
   code = program();
 
